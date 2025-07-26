@@ -4,9 +4,11 @@
   "description": "\"# 4stars-english-BE\"",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "prepare": "husky install"
-  },
+  "dev": "vite",
+  "build": "vite build",
+  "preview": "vite preview",
+  "prepare": "husky install"
+}, "type": "module",
   "keywords": [],
   "author": "",
   "license": "ISC",
