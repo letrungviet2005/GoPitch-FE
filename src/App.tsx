@@ -21,6 +21,7 @@ import Categories from "./pages/Vocabulary/Categories";
 import Admin from "./pages/Admin/Admin";
 import Video from "./pages/ArticleAndVideos/Video";
 import "../src/authentication/authentication";
+import HomePage from "./pages/Client/HomePage/HomePage";
 
 export default function App() {
   return (
@@ -30,7 +31,7 @@ export default function App() {
         <Routes>
           {/* Dashboard Layout */}
           <Route element={<AppLayout />}>
-            <Route index path="/" element={<Home />} />
+            <Route index path="/" element={<HomePage />} />
 
             {/* Others Page */}
             <Route path="/grammar" element={<Grammar />} />
