@@ -6,7 +6,6 @@ import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 
 import "../src/authentication/authentication";
-import HomePage from "./pages/Client/HomePage/HomePage";
 import Home from "./pages/Admin/Dashboard/Home";
 
 export default function App() {
