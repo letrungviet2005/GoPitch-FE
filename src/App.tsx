@@ -24,7 +24,7 @@ export default function App() {
           </Route>
 
           <Route element={<AppLayoutClient />}>
-            <Route path="/" element={<Pitch />} />
+            <Route path="/pitch" element={<Pitch />} />
 
             {/* Others Page */}
           </Route>
