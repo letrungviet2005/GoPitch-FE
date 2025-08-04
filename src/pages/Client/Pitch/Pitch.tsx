@@ -25,6 +25,8 @@ const Pitch = () => {
         <Pitchs />
         <Pitchs />
         <Pitchs />
+        <Pitchs />
+        <Pitchs />
       </div>
     </div>
   );
