@@ -1,7 +1,7 @@
 import React from "react";
 
-const Pitch = () => {
+const Pitchs = () => {
   return <div>Conponent of pitch</div>;
 };
 
-export default Pitch;
+export default Pitchs;
