@@ -21,6 +21,10 @@ const Pitch = () => {
 
       <div className={cx("pitchList")}>
         <Pitchs />
+        <Pitchs />
+        <Pitchs />
+        <Pitchs />
+        <Pitchs />
       </div>
     </div>
   );

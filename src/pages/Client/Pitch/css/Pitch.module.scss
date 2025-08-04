@@ -29,6 +29,13 @@
   background-color: white;
   color: black;
   transition: border-color 0.3s;
+}.pitchList {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  padding: 20px;
+  width: 100%; // đảm bảo chiều rộng đầy đủ
+  box-sizing: border-box;
 }
 
 .input:focus {
