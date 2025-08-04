@@ -1,8 +1,44 @@
 .container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 6vh; /* hoặc 300px */
-    background-color: #37883d;
-    color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 70px;
+  background-color: #37883d;
+  color: white;
+  padding: 0 20px;
+}
+
+.logo {
+  font-size: 1.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.navigation {
+  display: flex;
+  gap: 20px;
+  font-size: 1rem;
+}
+
+.navigation a {
+  text-decoration: none;
+  color: white;
+  transition: color 0.3s;
+}
+
+.navigation a:hover {
+  color: #c1ffc1;
+}
+
+.userProfile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.userProfile img {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  object-fit: cover;
 }

@@ -24,8 +24,7 @@ export default function App() {
           </Route>
 
           <Route element={<AppLayoutClient />}>
-            <Route index path="/admin" element={<Home />} />
-            <Route path="/pitch" element={<Pitch />} />
+            <Route path="/" element={<Pitch />} />
 
             {/* Others Page */}
           </Route>

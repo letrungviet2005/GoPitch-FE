@@ -1,8 +1,8 @@
 // src/layouts/AppLayout.js
 import React from "react";
 import { Outlet } from "react-router-dom";
-import Header from "./Header"; // Adjust the import path as necessary
-import Footer from "./Footer"; // Adjust the import path as necessary
+import Header from "./Header/Header";
+import Footer from "./Footer/Footer";
 
 const AppLayoutClient = () => {
   return (
