@@ -18,7 +18,6 @@ const Header = () => {
 
       <div className={cx("userProfile")}>
         <img src="/path/to/avatar.jpg" alt="User Avatar" />
-        <span>John Doe</span>
       </div>
     </div>
   );
