@@ -11,6 +11,7 @@ import Pitch from "./pages/Client/Pitch/Pitch";
 import AppLayoutClient from "./pages/Client/layout/AppLayoutClient";
 
 import HomePage from "./pages/Client/HomePage/HomePage";
+import DetailPitch from "./pages/Client/DetailPitch/DetailPitch";
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
           <Route element={<AppLayoutClient />}>
             <Route index path="/" element={<HomePage />} />
             <Route path="/pitch" element={<Pitch />} />
+            <Route path="/detailpitch" element={<DetailPitch />} />
 
             {/* Others Page */}
           </Route>
