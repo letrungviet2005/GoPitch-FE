@@ -64,6 +64,8 @@ const DetailPitch = () => {
             </table>
           </div>
 
+          <button className={cx("bookButton")}>Đặt sân ngay</button>
+
           {/* Dịch vụ khác */}
           <div className={cx("services")}>
             <h2>Dịch vụ kèm theo</h2>
@@ -110,7 +112,6 @@ const DetailPitch = () => {
               width="100%"
               height="300"
               style={{ border: 0 }}
-              allowFullScreen=""
               loading="lazy"
             ></iframe>
           </div>

@@ -17,7 +17,10 @@ const Header = () => {
       </div>
 
       <div className={cx("userProfile")}>
-        <img src="/path/to/avatar.jpg" alt="User Avatar" />
+        <img
+          src="https://tse1.mm.bing.net/th/id/OIP.vz3cycLecmyDwRm64tRxUgHaHa?pid=Api&P=0&h=180"
+          alt="User Avatar"
+        />
       </div>
     </div>
   );
