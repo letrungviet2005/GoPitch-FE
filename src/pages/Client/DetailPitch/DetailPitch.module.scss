@@ -1,25 +1,39 @@
 .detailPitch {
-  max-width: 900px;
-  margin: 0 auto;
   padding: 20px;
-  color: #333;
 }
 
-.mainImage {
-  img {
-    width: 100%;
-    height: auto;
-    border-radius: 8px;
-    object-fit: cover;
+.contentWrapper {
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
+
+  @media (max-width: 992px) {
+    flex-direction: column;
   }
 }
 
+.leftColumn {
+  flex: 2;
+}
+
+.rightColumn {
+  flex: 1;
+}
+
+.mainImage img {
+  width: 80%;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
 .infoSection {
-  margin-top: 20px;
+  background: #f8f8f8;
+  padding: 16px;
+  border-radius: 8px;
 
   h1 {
-    margin: 0 0 10px;
     font-size: 2rem;
+    margin-bottom: 8px;
   }
 
   .address {
@@ -28,60 +42,79 @@
   }
 
   p {
-    margin: 5px 0;
-    font-size: 1rem;
+    margin: 4px 0;
   }
 }
 
-.description {
-  margin-top: 30px;
+.galleryImages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 
-  h2 {
-    margin-bottom: 10px;
-    font-size: 1.4rem;
-  }
-
-  p {
-    line-height: 1.6;
-    text-align: justify;
-  }
-}
-
-.gallery {
-  margin-top: 30px;
-
-  h2 {
-    margin-bottom: 10px;
-  }
-
-  .galleryImages {
-    display: flex;
-    gap: 10px;
-
-    img {
-      border-radius: 6px;
-      width: 200px;
-      height: 150px;
-      object-fit: cover;
-    }
+  img {
+    border-radius: 6px;
+    width: calc(33.33% - 10px);
+    height: 150px;
+    object-fit: cover;
   }
 }
 
-.priceList {
-  margin-top: 30px;
+.priceList table {
+  width: 100%;
+  border-collapse: collapse;
 
-  table {
+  th, td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+  }
+
+  th {
+    background: #f5f5f5;
+  }
+}
+
+.services ul {
+  list-style: none;
+  padding: 0;
+
+  li {
+    padding: 6px 0;
+  }
+}
+
+.comments {
+  .comment {
+    background: #f8f8f8;
+    padding: 8px;
+    margin-bottom: 6px;
+    border-radius: 4px;
+  }
+
+  textarea {
     width: 100%;
-    border-collapse: collapse;
+    min-height: 80px;
+    margin-top: 10px;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+  }
 
-    th, td {
-      padding: 10px;
-      border: 1px solid #ccc;
-      text-align: center;
-    }
+  button {
+    margin-top: 8px;
+    padding: 8px 16px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
 
-    th {
-      background: #f5f5f5;
+    &:hover {
+      background: #0056b3;
     }
   }
+}
+
+.mapSection iframe {
+  border-radius: 8px;
 }
