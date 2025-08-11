@@ -5,57 +5,53 @@ import styles from "./BookingPitch.module.scss";
 const cx = classNames.bind(styles);
 
 const BookingPitch = () => {
-  const courts = ["Sân 1", "Sân 2", "Sân 3", "Sân 4", "Sân 5", "Sân 6"];
-  const times = [
-    "6:00",
-    "6:30",
-    "7:00",
-    "7:30",
-    "8:00",
-    "8:30",
-    "9:00",
-    "9:30",
-    "10:00",
-    "10:30",
-    "11:00",
-    "11:30",
-    "12:00",
-    "12:30",
-    "13:00",
-    "13:30",
-    "14:00",
-    "14:30",
-    "15:00",
-    "15:30",
-    "16:00",
-    "16:30",
-    "17:00",
-    "17:30",
-    "18:00",
-    "18:30",
-    "19:00",
-    "19:30",
-    "20:00",
-    "20:30",
-    "21:00",
-    "21:30",
-    "22:00",
+  // Ví dụ: giả sử API trả về giờ mở & giờ đóng
+  const startTime = "6:00";
+  const endTime = "22:00";
+  const stepMinutes = 30;
+
+  const courts = [
+    "C.Lông 1",
+    "C.Lông 2",
+    "C.Lông 3",
+    "C.Lông 4",
+    "C.Lông 5",
+    "C.Lông 6",
   ];
+
+  // Hàm tạo slot
+  const generateSlots = (start, end, step) => {
+    const slots = [];
+    let [h, m] = start.split(":").map(Number);
+    const [endH, endM] = end.split(":").map(Number);
+
+    while (h < endH || (h === endH && m < endM)) {
+      slots.push(`${h}:${m.toString().padStart(2, "0")}`);
+      m += step;
+      if (m >= 60) {
+        h++;
+        m = m % 60;
+      }
+    }
+    return slots;
+  };
+
+  const slots = generateSlots(startTime, endTime, stepMinutes);
 
   // Các ô booked (sân + giờ)
   const booked = [
-    { court: "Sân 1", time: "7:00" },
-    { court: "Sân 3", time: "9:30" },
-    { court: "Sân 2", time: "18:30" },
-    { court: "Sân 2", time: "19:00" },
-    { court: "Sân 4", time: "20:00" },
+    { court: "C.Lông 1", time: "7:00" },
+    { court: "C.Lông 2", time: "9:30" },
+    { court: "C.Lông 3", time: "18:30" },
+    { court: "C.Lông 4", time: "19:00" },
+    { court: "C.Lông 5", time: "20:00" },
   ];
 
   // Các ô locked (sân + giờ)
   const locked = [
-    { court: "Sân 1", time: "6:00" },
-    { court: "Sân 4", time: "8:00" },
-    { court: "Sân 5", time: "10:30" },
+    { court: "C.Lông 1", time: "6:00" },
+    { court: "C.Lông 1", time: "8:00" },
+    { court: "C.Lông 1", time: "10:30" },
   ];
 
   // Các ô event (sân + giờ)
@@ -91,16 +87,17 @@ const BookingPitch = () => {
           <thead>
             <tr>
               <th></th>
-              {times.map((time, index) => (
-                <th key={index}>{time}</th>
+              {slots.map((time, idx) => (
+                <th key={idx}>{time}</th>
               ))}
+              <th>{endTime}</th> {/* Vạch cuối */}
             </tr>
           </thead>
           <tbody>
             {courts.map((court, rowIndex) => (
               <tr key={rowIndex}>
                 <td className={cx("court-name")}>{court}</td>
-                {times.map((time, colIndex) => (
+                {slots.map((time, colIndex) => (
                   <td
                     key={colIndex}
                     className={cx("cell", getStatus(court, time))}

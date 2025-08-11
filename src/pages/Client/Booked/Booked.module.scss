@@ -1,0 +1,109 @@
+.booked-container {
+  max-width: 700px;
+  margin: auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background: #f9f9f9;
+  border-radius: 10px;
+}
+
+.customer-info {
+  display: flex;
+  gap: 15px;
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  align-items: center;
+  margin-bottom: 20px;
+
+  .avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .details {
+    h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+    p {
+      margin: 4px 0;
+      font-size: 14px;
+    }
+  }
+}
+
+.booking-list {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+
+  h3 {
+    margin-top: 0;
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+
+  .booking-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th, td {
+      padding: 8px;
+      border: 1px solid #ddd;
+      text-align: left;
+      font-size: 14px;
+    }
+  }
+
+  .total-price {
+    margin-top: 10px;
+    font-size: 15px;
+    text-align: right;
+    font-weight: bold;
+  }
+}
+
+.upload-section {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+
+  .upload-btn {
+    display: inline-block;
+    background: #4caf50;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .preview {
+    margin-top: 10px;
+
+    img {
+      max-width: 100%;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+  }
+}
+
+.footer {
+  text-align: center;
+
+  .confirm-btn {
+    background: #f0bb34;
+    color: white;
+    padding: 10px 25px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 15px;
+  }
+}
