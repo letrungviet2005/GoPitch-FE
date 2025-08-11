@@ -1,0 +1,98 @@
+.booking-container {
+  font-family: Arial, sans-serif;
+  background: #eafff2;
+  padding: 10px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.legend {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+
+  .legend-item {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 14px;
+
+    &.available { background: white; border: 1px solid #ccc; }
+    &.booked { background: #f44336; color: white; }
+    &.locked { background: #9e9e9e; color: white; }
+    &.event { background: #ff80ab; color: white; }
+  }
+
+  a {
+    color: #00695c;
+    font-weight: bold;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+}
+
+.date-picker button {
+  background: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.booking-table {
+  border-collapse: collapse;
+  margin-top: 10px;
+  width: max-content;
+  min-width: 100%;
+
+  th,
+  td {
+    border: 1px solid #ccc;
+    height: 30px;
+    text-align: center;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .court-name {
+    background: #d8f5d3;
+    font-weight: bold;
+    position: sticky;
+    left: 0;
+    z-index: 2;
+  }
+
+  .cell {
+    &.available { background: white; }
+    &.booked { background: #f44336; }
+    &.locked { background: #9e9e9e; }
+    &.event { background: #ff80ab; }
+  }
+}
+
+.note {
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+.footer {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+
+  .next-btn {
+    background: #fbc02d;
+    border: none;
+    padding: 10px 40px;
+    font-size: 16px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+}
