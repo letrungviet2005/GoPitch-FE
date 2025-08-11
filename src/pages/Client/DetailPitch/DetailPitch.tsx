@@ -67,27 +67,46 @@ const DetailPitch = () => {
           <button className={cx("bookButton")}>Đặt sân ngay</button>
 
           {/* Dịch vụ khác */}
-          <div className={cx("services")}>
-            <h2>Dịch vụ kèm theo</h2>
-            <ul>
-              <li>💧 Nước suối: 10.000 VNĐ/chai</li>
-              <li>🏸 Thuê vợt: 50.000 VNĐ/giờ</li>
-              <li>👕 Thuê áo thi đấu: 30.000 VNĐ/bộ</li>
-            </ul>
-          </div>
 
           {/* Bình luận */}
           <div className={cx("comments")}>
             <h2>Đánh giá & Bình luận</h2>
-            <div className={cx("comment")}>
-              <strong>Nguyễn Văn A:</strong> Sân đẹp, ánh sáng tốt, nhân viên
-              thân thiện.
+
+            {/* Comment 1 */}
+            <div className={cx("commentItem")}>
+              <img
+                src="https://i.pravatar.cc/40?img=1"
+                alt="Nguyễn Văn A"
+                className={cx("avatar")}
+              />
+              <div className={cx("commentContent")}>
+                <strong>Nguyễn Văn A</strong>
+                <p>Sân đẹp, ánh sáng tốt, nhân viên thân thiện.</p>
+              </div>
             </div>
-            <div className={cx("comment")}>
-              <strong>Trần Thị B:</strong> Giá hợp lý, chỗ để xe rộng, sẽ quay
-              lại.
+
+            {/* Comment 2 */}
+            <div className={cx("commentItem")}>
+              <img
+                src="https://i.pravatar.cc/40?img=2"
+                alt="Trần Thị B"
+                className={cx("avatar")}
+              />
+              <div className={cx("commentContent")}>
+                <strong>Trần Thị B</strong>
+                <p>Giá hợp lý, chỗ để xe rộng, sẽ quay lại.</p>
+              </div>
             </div>
-            <textarea placeholder="Viết bình luận..." />
+
+            {/* Form nhập bình luận */}
+            <div className={cx("commentForm")}>
+              <img
+                src="https://i.pravatar.cc/40?img=3"
+                alt="Bạn"
+                className={cx("avatar")}
+              />
+              <textarea placeholder="Viết bình luận..." />
+            </div>
             <button>Gửi</button>
           </div>
         </div>
@@ -96,8 +115,10 @@ const DetailPitch = () => {
         <div className={cx("rightColumn")}>
           {/* Thông tin cơ bản */}
           <div className={cx("infoSection")}>
-            <h1>Sân ABC</h1>
-            <p className={cx("address")}>📍 123 Đường XYZ, Quận 1</p>
+            <h1>Sân Cầu lông Hiếu Con</h1>
+            <p className={cx("address")}>
+              📍 123 Đỗ Quỳ, Quận Cẩm Lệ, TP Đà Nẵng
+            </p>
             <p>🕒 Giờ mở cửa: 06:00 - 22:00</p>
             <p>📞 0123 456 789</p>
             <p>⭐ 4.5/5</p>
@@ -114,6 +135,31 @@ const DetailPitch = () => {
               style={{ border: 0 }}
               loading="lazy"
             ></iframe>
+          </div>
+          <div className={cx("services")}>
+            <h2>Dịch vụ kèm theo</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Dịch vụ</th>
+                  <th>Giá</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>💧 Nước suối</td>
+                  <td>10.000 VNĐ/chai</td>
+                </tr>
+                <tr>
+                  <td>🏸 Thuê vợt</td>
+                  <td>50.000 VNĐ/giờ</td>
+                </tr>
+                <tr>
+                  <td>👕 Thuê áo thi đấu</td>
+                  <td>30.000 VNĐ/bộ</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
