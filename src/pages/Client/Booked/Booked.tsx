@@ -94,7 +94,7 @@ const Booked = () => {
 
       {/* Nút xác nhận */}
       <div className={cx("footer")}>
-        <button className={cx("confirm-btn")}>Xác nhận đặt</button>
+        <button className={cx("confirm-btn")}>Xác nhận đặt sân</button>
       </div>
     </div>
   );
