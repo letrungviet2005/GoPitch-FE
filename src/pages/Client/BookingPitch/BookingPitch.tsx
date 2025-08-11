@@ -42,11 +42,32 @@ const BookingPitch = () => {
     "22:00",
   ];
 
+  // Các ô booked (sân + giờ)
+  const booked = [
+    { court: "Sân 1", time: "7:00" },
+    { court: "Sân 3", time: "9:30" },
+    { court: "Sân 2", time: "18:30" },
+    { court: "Sân 2", time: "19:00" },
+    { court: "Sân 4", time: "20:00" },
+  ];
+
+  // Các ô locked (sân + giờ)
+  const locked = [
+    { court: "Sân 1", time: "6:00" },
+    { court: "Sân 4", time: "8:00" },
+    { court: "Sân 5", time: "10:30" },
+  ];
+
+  // Các ô event (sân + giờ)
+  const events = [{ court: "Sân 6", time: "15:00" }];
+
   const getStatus = (court, time) => {
-    const booked = ["7:00", "9:30", "18:30", "19:00", "19:30", "20:00"];
-    const locked = ["6:00", "6:30", "8:00", "10:30"];
-    if (booked.includes(time)) return "booked";
-    if (locked.includes(time)) return "locked";
+    if (booked.some((b) => b.court === court && b.time === time))
+      return "booked";
+    if (locked.some((l) => l.court === court && l.time === time))
+      return "locked";
+    if (events.some((e) => e.court === court && e.time === time))
+      return "event";
     return "available";
   };
 
