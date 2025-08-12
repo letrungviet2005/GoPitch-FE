@@ -23,10 +23,6 @@ const HomePage = () => {
           giản.
         </p>
       </section>
-
-      <footer className={cx("footer")}>
-        <p>© 2025 GoPitch. All rights reserved.</p>
-      </footer>
     </div>
   );
 };
