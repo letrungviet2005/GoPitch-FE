@@ -5,7 +5,7 @@ const cx = classNames.bind(style);
 
 const Pitchs = ({
   image = "https://via.placeholder.com/600x300?text=No+Image",
-  avatar,
+  avatar = "https://via.placeholder.com/150?text=No+Avatar",
   name = "Chưa có tên sân",
   address = "Chưa có địa chỉ",
   hours = "Chưa cập nhật",

@@ -58,7 +58,7 @@ const Pitch = () => {
             <Pitchs
               key={pitch.id}
               image={pitch.imageUrl}
-              avatar={pitch.imageUrl}
+              avatar={pitch.imageAvatar}
               name={pitch.name}
               address={pitch.address}
               hours={`${pitch.timeStart} - ${pitch.timeEnd}`}
