@@ -5,7 +5,6 @@ import styles from "./BookingPitch.module.scss";
 const cx = classNames.bind(styles);
 
 const BookingPitch = () => {
-  // Ví dụ: giả sử API trả về giờ mở & giờ đóng
   const startTime = "6:00";
   const endTime = "22:00";
   const stepMinutes = 30;

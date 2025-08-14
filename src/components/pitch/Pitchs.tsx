@@ -3,30 +3,31 @@ import style from "./Pitchs.module.scss";
 
 const cx = classNames.bind(style);
 
-const Pitchs = () => {
+const Pitchs = ({
+  image = "https://via.placeholder.com/600x300?text=No+Image",
+  avatar,
+  name = "Chưa có tên sân",
+  address = "Chưa có địa chỉ",
+  hours = "Chưa cập nhật",
+  rating = "N/A",
+}) => {
   return (
     <div className={cx("pitchCard")}>
       {/* Nửa trên: Hình ảnh sân */}
       <div className={cx("pitchImage")}>
-        <img
-          src="https://images2.thanhnien.vn/Uploaded/hoangquynh/2022_10_16/nguyen-thuy-linh-3009-doc-lap-2195.jpg"
-          alt="Sân bóng"
-        />
+        <img src={image} alt={`Sân ${name}`} />
       </div>
 
       {/* Nửa dưới: Thông tin sân */}
       <div className={cx("pitchInfo")}>
         <div className={cx("pitchAvatar")}>
-          <img
-            src="https://images2.thanhnien.vn/Uploaded/hoangquynh/2022_10_16/nguyen-thuy-linh-3009-doc-lap-2195.jpg"
-            alt="Avatar sân"
-          />
+          <img src={avatar || image} alt={`Avatar của ${name}`} />
         </div>
         <div className={cx("pitchDetails")}>
-          <h3>Sân ABC</h3>
-          <p>📍 Địa chỉ: 123 Đường XYZ, Quận 1</p>
-          <p>🕒 Giờ mở cửa: 6:00 - 22:00</p>
-          <p>⭐ 4.5/5</p>
+          <h3>{name}</h3>
+          <p>📍 Địa chỉ: {address}</p>
+          <p>🕒 Giờ mở cửa: {hours}</p>
+          <p>⭐ {rating}/5</p>
         </div>
       </div>
     </div>

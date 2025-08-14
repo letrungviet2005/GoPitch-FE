@@ -1,12 +1,11 @@
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router-dom"; // ✅ Sửa import
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
 import Button from "../ui/button/Button";
 import config from "../../config/config";
-import { useNavigate } from "react-router";
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -17,6 +16,7 @@ export default function SignInForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -24,27 +24,37 @@ export default function SignInForm() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(config + "auth/login", {
+      console.log("Payload gửi đi:", {
+        username: email.trim(),
+        password: password,
+      });
+
+      const response = await fetch("http://localhost:8080/api/v1/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          username: email,
-          password: password,
+          username: "vietlt.23it@vku.udn.vn",
+          password: "123456789",
         }),
       });
 
       const result = await response.json();
-      if (result.statusCode === 200 && result.data?.accessToken) {
-        localStorage.setItem("accessToken", result.data.accessToken);
+
+      if (result.accessToken) {
+        if (isChecked) {
+          localStorage.setItem("accessToken", result.accessToken);
+        } else {
+          sessionStorage.setItem("accessToken", result.accessToken);
+        }
         setSuccess("Login successful!");
-        navigate("/"); // Redirect to dashboard after successful login
+        navigate("/");
       } else {
         setError(result.message || "Login failed");
       }
     } catch (err) {
-      setError("Network error or server not responding.");
+      setError(err.message || "Network error or server not responding.");
     } finally {
       setIsLoading(false);
     }
@@ -71,9 +81,6 @@ export default function SignInForm() {
               Enter your email and password to sign in!
             </p>
           </div>
-
-          {/* Social buttons (unchanged) */}
-          {/* ... */}
 
           <div className="relative py-3 sm:py-5">
             <div className="absolute inset-0 flex items-center">
@@ -123,7 +130,10 @@ export default function SignInForm() {
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Checkbox checked={isChecked} onChange={setIsChecked} />
+                  <Checkbox
+                    checked={isChecked}
+                    onChange={(e) => setIsChecked(e.target.checked)} // ✅ đảm bảo đúng boolean
+                  />
                   <span className="block font-normal text-gray-700 text-theme-sm dark:text-gray-400">
                     Keep me logged in
                   </span>

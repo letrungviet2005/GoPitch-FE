@@ -14,6 +14,7 @@ import HomePage from "./pages/Client/HomePage/HomePage";
 import DetailPitch from "./pages/Client/DetailPitch/DetailPitch";
 import BookingPitch from "./pages/Client/BookingPitch/BookingPitch";
 import Booked from "./pages/Client/Booked/Booked";
+import SignInForm from "./components/auth/SignInForm";
 
 export default function App() {
   return (
