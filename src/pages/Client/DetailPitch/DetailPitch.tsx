@@ -43,20 +43,24 @@ const DetailPitch = () => {
             <table>
               <thead>
                 <tr>
+                  <th>Loại sân/Dịch vụ</th>
                   <th>Khung giờ</th>
                   <th>Giá (VNĐ)</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
+                  <td>Cầu Lông</td>
                   <td>06:00 - 12:00</td>
                   <td>200.000</td>
                 </tr>
                 <tr>
+                  <td>Cầu Lông</td>
                   <td>12:00 - 17:00</td>
                   <td>250.000</td>
                 </tr>
                 <tr>
+                  <td>Cầu Lông</td>
                   <td>17:00 - 22:00</td>
                   <td>300.000</td>
                 </tr>
@@ -129,7 +133,7 @@ const DetailPitch = () => {
             <h2>Vị trí trên bản đồ</h2>
             <iframe
               title="Google Maps"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3918.4507345895673!2d106.62644571532156!3d10.853821192270925!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752b3d5f71b9a1%3A0x2ddc28c8f8cba2df!2zU8OibiBj4bqndSBsb25n!5e0!3m2!1svi!2s!4v1691582950860!5m2!1svi!2s"
+              src="https://www.google.com/maps?q=123+Đỗ+Quỳ,+Cẩm+Lệ,+TP+Đà+Nẵng&output=embed"
               width="100%"
               height="300"
               style={{ border: 0 }}
