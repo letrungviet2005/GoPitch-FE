@@ -47,9 +47,9 @@ const Pitch = () => {
           placeholder="Nhập tên sân thể thao hoặc vị trí..."
           className={cx("input")}
         />
-        <button className={cx("button")}>🏸 Cầu lông gần tôi</button>
+        {/* <button className={cx("button")}>🏸 Cầu lông gần tôi</button>
         <button className={cx("button")}>🏓 Pickleball gần tôi</button>
-        <button className={cx("button")}>🏀 Bóng rổ gần tôi</button>
+        <button className={cx("button")}>🏀 Bóng rổ gần tôi</button> */}
       </div>
 
       <div className={cx("pitchList")}>
