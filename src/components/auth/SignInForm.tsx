@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom"; // ✅ Sửa import
+import { Link, useNavigate } from "react-router-dom";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
@@ -21,40 +21,56 @@ export default function SignInForm() {
     e.preventDefault();
     setError("");
     setSuccess("");
+
+    // Kiểm tra dữ liệu đầu vào cơ bản
+    if (!email || !password) {
+      setError("Vui lòng nhập đầy đủ email và mật khẩu.");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      console.log("Payload gửi đi:", {
-        username: email.trim(),
-        password: password,
-      });
+      // Sử dụng config.baseUrl nếu bạn đã định nghĩa trong file config
+      const API_URL = config.API_URL || "http://localhost:8080/api/v1";
 
-      const response = await fetch("http://localhost:8080/api/v1/auth/login", {
+      const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          username: "vietlt.23it@vku.udn.vn",
-          password: "123456789",
+          username: email.trim(), 
+          password: password, 
         }),
       });
 
       const result = await response.json();
 
-      if (result.accessToken) {
+      if (response.ok && result.accessToken) {
+        localStorage.removeItem("accessToken");
+        sessionStorage.removeItem("accessToken");
+
         if (isChecked) {
           localStorage.setItem("accessToken", result.accessToken);
         } else {
           sessionStorage.setItem("accessToken", result.accessToken);
         }
-        setSuccess("Login successful!");
-        navigate("/");
+
+        setSuccess("Đăng nhập thành công! Đang chuyển hướng...");
+
+        // Đợi 1.5s để người dùng thấy thông báo thành công
+        setTimeout(() => {
+          navigate("/");
+          // Reload nhẹ để các component khác nhận token mới nếu cần
+          window.location.reload();
+        }, 1500);
       } else {
-        setError(result.message || "Login failed");
+        // Hiển thị lỗi từ server hoặc lỗi mặc định
+        setError(result.message || "Email hoặc mật khẩu không chính xác.");
       }
     } catch (err) {
-      setError(err.message || "Network error or server not responding.");
+      setError("Lỗi kết nối: Server không phản hồi hoặc lỗi mạng.");
     } finally {
       setIsLoading(false);
     }
@@ -100,9 +116,11 @@ export default function SignInForm() {
                   Email <span className="text-error-500">*</span>
                 </Label>
                 <Input
+                  type="email"
                   placeholder="info@gmail.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  required
                 />
               </div>
               <div>
@@ -115,6 +133,7 @@ export default function SignInForm() {
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    required
                   />
                   <span
                     onClick={() => setShowPassword(!showPassword)}
@@ -128,11 +147,12 @@ export default function SignInForm() {
                   </span>
                 </div>
               </div>
+
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Checkbox
                     checked={isChecked}
-                    onChange={(e) => setIsChecked(e.target.checked)} // ✅ đảm bảo đúng boolean
+                    onChange={(e) => setIsChecked(e.target.checked)}
                   />
                   <span className="block font-normal text-gray-700 text-theme-sm dark:text-gray-400">
                     Keep me logged in
@@ -146,11 +166,25 @@ export default function SignInForm() {
                 </Link>
               </div>
 
-              {error && <p className="text-sm text-red-500">{error}</p>}
-              {success && <p className="text-sm text-green-600">{success}</p>}
+              {/* Thông báo lỗi và thành công */}
+              {error && (
+                <div className="p-3 text-sm text-red-500 bg-red-100 rounded-lg">
+                  {error}
+                </div>
+              )}
+              {success && (
+                <div className="p-3 text-sm text-green-600 bg-green-100 rounded-lg">
+                  {success}
+                </div>
+              )}
 
               <div>
-                <Button className="w-full" size="sm" disabled={isLoading}>
+                <Button
+                  className="w-full"
+                  size="sm"
+                  type="submit"
+                  disabled={isLoading}
+                >
                   {isLoading ? "Signing in..." : "Sign in"}
                 </Button>
               </div>

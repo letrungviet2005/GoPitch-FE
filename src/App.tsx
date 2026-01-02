@@ -5,7 +5,6 @@ import NotFound from "./pages/OtherPage/NotFound";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 
-import "../src/authentication/authentication";
 import Home from "./pages/Admin/Dashboard/Home";
 import Pitch from "./pages/Client/Pitch/Pitch";
 import AppLayoutClient from "./pages/Client/layout/AppLayoutClient";
@@ -36,7 +35,7 @@ export default function App() {
             <Route path="/booked" element={<Booked />} />
 
             {/* Booking Pitch Page */}
-            <Route path="/detailpitch" element={<DetailPitch />} />
+            <Route path="/detailpitch/:id" element={<DetailPitch />} />
 
             {/* Others Page */}
           </Route>
