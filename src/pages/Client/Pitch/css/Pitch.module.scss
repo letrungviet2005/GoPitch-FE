@@ -1,60 +1,81 @@
 .container {
+  width: 100%; // Chiếm hết chiều ngang
+  min-height: 100vh;
+  background-color: #f8fafc;
+  padding: 20px; // Padding nhẹ để không dính sát mép quá
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start; /* Đẩy nội dung lên trên cùng */
-  height: 100vh;
-  padding: 20px 20px 20px;
-  color: white;
   box-sizing: border-box;
 }
 
 .searchBar {
+  width: 95%; // Cho thanh search rộng ra theo
+  max-width: 1200px;
+  background: white;
+  padding: 12px 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
   display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  justify-content: center;
-  width: 100%;
-  max-width: 2000px;
+  gap: 15px;
+  margin-bottom: 30px;
+
+  .input {
+    flex: 1;
+    border: 1px solid #e2e8f0;
+    padding: 10px 15px;
+    border-radius: 8px;
+    outline: none;
+    &:focus { border-color: #10b981; }
+  }
+
+  .filterGroup {
+    display: flex;
+    gap: 10px;
+    .button {
+      padding: 0 15px;
+      background: #f1f5f9;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      white-space: nowrap;
+      &:hover { background: #10b981; color: white; }
+    }
+  }
 }
 
-.input {
-  flex: 1;
-  min-width: 280px;
-  padding: 12px 16px;
-  border: 3px solid rgb(172, 172, 172);
-  border-radius: 8px;
-  font-size: 1rem;
-  outline: none;
-  background-color: white;
-  color: black;
-  transition: border-color 0.3s;
-}.pitchList {
+.pitchList {
+  width: 100%; // QUAN TRỌNG: Chiếm hết width
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  padding: 20px;
-  width: 100%;
+  // Tự động tính toán số cột dựa trên độ rộng màn hình
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); 
+  gap: 25px;
+  padding: 10px;
   box-sizing: border-box;
 }
 
-.input:focus {
-  border-color: #f0f0f0;
-}
-
-.button {
-  padding: 12px 16px;
-  background-color: #2e7032;
-  border: none;
-  border-radius: 8px;
-  color: white;
+.pitchItemWrapper {
+  background: white;
+  border-radius: 15px;
+  overflow: hidden;
+  transition: transform 0.2s;
   cursor: pointer;
-  font-size: 0.95rem;
-  white-space: nowrap;
-  transition: background-color 0.3s, transform 0.2s;
+  border: 1px solid #eee;
+  &:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
 }
 
-.button:hover {
-  background-color: #256127;
-  transform: translateY(-2px);
+.paginationWrapper {
+  margin: 40px 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding-bottom: 20px;
+}
+
+.loading {
+  padding: 50px;
+  font-size: 1.2rem;
+  color: #10b981;
+  font-weight: bold;
 }

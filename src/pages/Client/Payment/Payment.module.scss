@@ -1,0 +1,133 @@
+.payment-page {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f0f2f5;
+  padding: 40px 0;
+  font-family: 'Inter', sans-serif;
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 30px;
+  h1 { font-size: 24px; color: #1a1a1a; margin: 0; }
+  .back-btn {
+    background: none; border: none; color: #666; cursor: pointer;
+    font-size: 16px; &:hover { color: #000; }
+  }
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr; // Chia 2 cột
+  gap: 30px;
+  align-items: start;
+
+  @media (max-width: 992px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 25px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  margin-bottom: 20px;
+
+  h3 { margin-top: 0; margin-bottom: 20px; font-size: 18px; border-bottom: 1px solid #eee; padding-bottom: 10px; color: #2c3e50; }
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  span { color: #666; }
+  strong { color: #1a1a1a; }
+}
+
+.slot-item {
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.payment-card {
+  border-top: 5px solid #2ecc71;
+  
+  .total-box {
+    text-align: center;
+    margin-bottom: 25px;
+    span { color: #666; font-size: 14px; }
+    .amount { color: #2ecc71; margin: 5px 0; font-size: 32px; font-weight: 800; }
+  }
+}
+
+.bank-info {
+  background: #fff9db;
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px dashed #fab005;
+  margin-bottom: 25px;
+  font-size: 14px;
+  .bank-details { line-height: 1.6; margin-top: 10px; }
+}
+
+.upload-box {
+  label { display: block; margin-bottom: 10px; font-weight: 600; font-size: 14px; }
+  
+  .upload-area {
+    border: 2px dashed #cbd5e0;
+    border-radius: 12px;
+    height: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    overflow: hidden;
+    transition: 0.3s;
+
+    &:hover { border-color: #2ecc71; background: #f0fff4; }
+
+    .placeholder {
+      text-align: center;
+      color: #718096;
+      .icon { font-size: 40px; display: block; margin-bottom: 10px; }
+    }
+
+    .preview-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  }
+}
+
+.confirm-btn {
+  width: 100%;
+  background: #1a1a1a;
+  color: white;
+  border: none;
+  padding: 18px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  margin-top: 25px;
+  cursor: pointer;
+  transition: 0.3s;
+
+  &:disabled { background: #e2e8f0; color: #a0aec0; cursor: not-allowed; }
+  &:hover:not(:disabled) { background: #000; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+}

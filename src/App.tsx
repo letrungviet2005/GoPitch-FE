@@ -14,6 +14,8 @@ import DetailPitch from "./pages/Client/DetailPitch/DetailPitch";
 import BookingPitch from "./pages/Client/BookingPitch/BookingPitch";
 import Booked from "./pages/Client/Booked/Booked";
 import SignInForm from "./components/auth/SignInForm";
+import Payment from "./pages/Client/Payment/Payment";
+import Profile from "./pages/Client/Profile/Profile";
 
 export default function App() {
   return (
@@ -31,13 +33,15 @@ export default function App() {
           <Route element={<AppLayoutClient />}>
             <Route index path="/" element={<HomePage />} />
             <Route path="/pitch" element={<Pitch />} />
-            <Route path="/bookingpitch" element={<BookingPitch />} />
+            <Route path="/bookingpitch/:id" element={<BookingPitch />} />
+            <Route path="/payment" element={<Payment />} />
             <Route path="/booked" element={<Booked />} />
 
             {/* Booking Pitch Page */}
             <Route path="/detailpitch/:id" element={<DetailPitch />} />
 
             {/* Others Page */}
+            <Route path="/profile" element={<Profile />} />
           </Route>
 
           {/* Auth Layout */}

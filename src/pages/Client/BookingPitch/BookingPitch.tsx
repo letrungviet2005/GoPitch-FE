@@ -1,121 +1,219 @@
-import React from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import classNames from "classnames/bind";
+import axios from "axios";
 import styles from "./BookingPitch.module.scss";
 
 const cx = classNames.bind(styles);
 
 const BookingPitch = () => {
-  const startTime = "6:00";
-  const endTime = "22:00";
-  const stepMinutes = 30;
+  const { id } = useParams();
+  const navigate = useNavigate();
 
-  const courts = [
-    "C.Lông 1",
-    "C.Lông 2",
-    "C.Lông 3",
-    "C.Lông 4",
-    "C.Lông 5",
-    "C.Lông 6",
-  ];
+  const [pitches, setPitches] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [clubInfo, setClubInfo] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
+  const [selectedSlots, setSelectedSlots] = useState([]);
 
-  // Hàm tạo slot
-  const generateSlots = (start, end, step) => {
-    const slots = [];
-    let [h, m] = start.split(":").map(Number);
-    const [endH, endM] = end.split(":").map(Number);
-
-    while (h < endH || (h === endH && m < endM)) {
-      slots.push(`${h}:${m.toString().padStart(2, "0")}`);
-      m += step;
-      if (m >= 60) {
-        h++;
-        m = m % 60;
-      }
+  const timeLabels = useMemo(() => {
+    const labels = [];
+    for (let h = 5; h <= 22; h++) {
+      labels.push(`${h.toString().padStart(2, "0")}:00`);
     }
-    return slots;
+    return labels;
+  }, []);
+
+  const getPriceForTime = (timeLabel) => {
+    if (!clubInfo?.pitchPrices) return 0;
+    const match = clubInfo.pitchPrices.find((p) => {
+      const start = p.timeStart.substring(0, 5);
+      const end = p.timeEnd.substring(0, 5);
+      return timeLabel >= start && timeLabel < end;
+    });
+    return match ? match.price : 0;
   };
 
-  const slots = generateSlots(startTime, endTime, stepMinutes);
+  const fetchBookingData = async () => {
+    try {
+      setLoading(true);
+      const token =
+        localStorage.getItem("accessToken") ||
+        sessionStorage.getItem("accessToken");
+      const clubRes = await axios.get(
+        `http://localhost:8080/api/v1/clubs/${id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const result = clubRes.data.result || clubRes.data;
+      setClubInfo(result);
 
-  // Các ô booked (sân + giờ)
-  const booked = [
-    { court: "C.Lông 1", time: "7:00" },
-    { court: "C.Lông 2", time: "9:30" },
-    { court: "C.Lông 3", time: "18:30" },
-    { court: "C.Lông 4", time: "19:00" },
-    { court: "C.Lông 5", time: "20:00" },
-  ];
-
-  // Các ô locked (sân + giờ)
-  const locked = [
-    { court: "C.Lông 1", time: "6:00" },
-    { court: "C.Lông 1", time: "8:00" },
-    { court: "C.Lông 1", time: "10:30" },
-  ];
-
-  // Các ô event (sân + giờ)
-  const events = [{ court: "Sân 6", time: "15:00" }];
-
-  const getStatus = (court, time) => {
-    if (booked.some((b) => b.court === court && b.time === time))
-      return "booked";
-    if (locked.some((l) => l.court === court && l.time === time))
-      return "locked";
-    if (events.some((e) => e.court === court && e.time === time))
-      return "event";
-    return "available";
+      const pitchesWithCals = await Promise.all(
+        (result.pitches || []).map(async (p) => {
+          const calRes = await axios.get(
+            `http://localhost:8080/api/v1/calendars?pitchId=${p.id}&date=${selectedDate}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          return { ...p, calendars: calRes.data || [] };
+        })
+      );
+      setPitches(pitchesWithCals);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    if (id) fetchBookingData();
+  }, [id, selectedDate]);
+
+  const handleCellClick = (pitch, time) => {
+    const isBooked = pitch.calendars.some(
+      (c) => c.startTime.split("T")[1].substring(0, 5) === time
+    );
+    if (isBooked) return;
+
+    const slotKey = `${pitch.id}-${time}`;
+    const isSelected = selectedSlots.some((s) => s.slotKey === slotKey);
+
+    if (isSelected) {
+      setSelectedSlots(selectedSlots.filter((s) => s.slotKey !== slotKey));
+    } else {
+      setSelectedSlots([
+        ...selectedSlots,
+        {
+          slotKey,
+          pitchId: pitch.id,
+          pitchName: pitch.name,
+          time,
+          date: selectedDate,
+          price: getPriceForTime(time),
+        },
+      ]);
+    }
+  };
+
+  const totalAmount = selectedSlots.reduce((sum, s) => sum + s.price, 0);
+
+  if (loading)
+    return <div className={cx("loading")}>Đang tải dữ liệu sân...</div>;
 
   return (
     <div className={cx("booking-container")}>
-      <header className={cx("header")}>
-        <div className={cx("legend")}>
-          <span className={cx("legend-item", "available")}>Trống</span>
-          <span className={cx("legend-item", "booked")}>Đã đặt</span>
-          <span className={cx("legend-item", "locked")}>Khoá</span>
-          <span className={cx("legend-item", "event")}>Sự kiện</span>
-          <a href="#">Xem sân & bảng giá</a>
+      <header className={cx("header-top")}>
+        <div className={cx("club-info")}>
+          <h1>{clubInfo?.name}</h1>
+          <p>📍 {clubInfo?.address}</p>
         </div>
-        <div className={cx("date-picker")}>
-          <button>📅 11/08/2025</button>
-        </div>
+        <button className={cx("back-btn")} onClick={() => navigate(-1)}>
+          ← Quay lại
+        </button>
       </header>
 
-      <div className={cx("table-wrapper")}>
+      <div className={cx("controls-bar")}>
+        <div className={cx("date-picker-wrapper")}>
+          <label>Chọn ngày đặt:</label>
+          <input
+            type="date"
+            value={selectedDate}
+            min={new Date().toISOString().split("T")[0]}
+            onChange={(e) => setSelectedDate(e.target.value)}
+          />
+        </div>
+
+        <div className={cx("legend")}>
+          <div className={cx("legend-item", "available")}>
+            <div className={cx("box")}></div> Trống
+          </div>
+          <div className={cx("legend-item", "booked")}>
+            <div className={cx("box")}></div> Đã đặt
+          </div>
+          <div className={cx("legend-item", "selected")}>
+            <div className={cx("box")}></div> Đang chọn
+          </div>
+        </div>
+      </div>
+
+      <div className={cx("table-container")}>
         <table className={cx("booking-table")}>
           <thead>
             <tr>
-              <th></th>
-              {slots.map((time, idx) => (
-                <th key={idx}>{time}</th>
+              <th className={cx("sticky-col")}>SÂN CON</th>
+              {timeLabels.map((t) => (
+                <th key={t}>{t}</th>
               ))}
-              <th>{endTime}</th> {/* Vạch cuối */}
             </tr>
           </thead>
           <tbody>
-            {courts.map((court, rowIndex) => (
-              <tr key={rowIndex}>
-                <td className={cx("court-name")}>{court}</td>
-                {slots.map((time, colIndex) => (
-                  <td
-                    key={colIndex}
-                    className={cx("cell", getStatus(court, time))}
-                  ></td>
-                ))}
+            {pitches.map((p) => (
+              <tr key={p.id}>
+                <td className={cx("sticky-col")}>{p.name}</td>
+                {timeLabels.map((t) => {
+                  const isBooked = p.calendars.some(
+                    (c) => c.startTime.split("T")[1].substring(0, 5) === t
+                  );
+                  const isSelected = selectedSlots.some(
+                    (s) => s.slotKey === `${p.id}-${t}`
+                  );
+                  const price = getPriceForTime(t);
+
+                  return (
+                    <td
+                      key={t}
+                      className={cx("cell", {
+                        booked: isBooked,
+                        selected: isSelected,
+                      })}
+                      onClick={() => handleCellClick(p, t)}
+                    >
+                      {isBooked ? (
+                        "✕"
+                      ) : (
+                        <>
+                          {isSelected && (
+                            <div style={{ fontSize: "18px" }}>✓</div>
+                          )}
+                          <span className={cx("price-tag")}>
+                            {price > 0 ? `${price / 1000}k` : "--"}
+                          </span>
+                        </>
+                      )}
+                    </td>
+                  );
+                })}
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      <div className={cx("note")}>
-        <strong>Lưu ý:</strong> Nếu bạn cần đặt lịch cố định vui lòng liên hệ:{" "}
-        <b>0374.857.068</b>
-      </div>
-
-      <div className={cx("footer")}>
-        <button className={cx("next-btn")}>TIẾP THEO</button>
-      </div>
+      <footer className={cx("footer")}>
+        <div className={cx("price-info")}>
+          <h4>TỔNG THANH TOÁN ({selectedSlots.length} ô)</h4>
+          <p>{totalAmount.toLocaleString()} VNĐ</p>
+        </div>
+        <button
+          className={cx("next-btn")}
+          disabled={selectedSlots.length === 0}
+          onClick={() =>
+            navigate("/payment", {
+              state: {
+                selectedSlots,
+                totalAmount,
+                clubId: id,
+                clubName: clubInfo?.name,
+              },
+            })
+          }
+        >
+          TIẾP TỤC ĐẶT SÂN
+        </button>
+      </footer>
     </div>
   );
 };

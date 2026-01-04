@@ -1,81 +1,95 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router"; // Để lấy ID từ URL
-import axios from "axios"; // Hoặc instance axios bạn đã cấu hình
+import { useParams } from "react-router";
+import axios from "axios";
 import classNames from "classnames/bind";
 import styles from "./DetailPitch.module.scss";
+import { useNavigate } from "react-router-dom";
 
 const cx = classNames.bind(styles);
 
 const DetailPitch = () => {
-  const { id } = useParams(); // Lấy ID sân từ đường dẫn /detailpitch/:id
+  const { id } = useParams();
   const [club, setClub] = useState(null);
+  const [extraServices, setExtraServices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
   const formatTime = (timeString) => {
     if (!timeString) return "";
     const parts = timeString.split(":");
-    if (parts.length >= 2) {
-      return `${parts[0]}:${parts[1]}`;
-    }
-    return timeString;
+    return parts.length >= 2 ? `${parts[0]}:${parts[1]}` : timeString;
+  };
+
+  const handleNavigateToBooking = () => {
+    navigate(`/bookingpitch/${id}`);
   };
 
   useEffect(() => {
-    const fetchClubDetail = async () => {
+    const fetchAllData = async () => {
       try {
         setLoading(true);
-        // Lấy token từ localStorage (vì API cần Auth)
         const token =
           localStorage.getItem("accessToken") ||
           sessionStorage.getItem("accessToken");
-        console.log("Token hiện tại:", token);
+        const headers = { Authorization: `Bearer ${token}` };
 
-        const response = await axios.get(
-          `http://localhost:8080/api/v1/clubs/${id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        // Sử dụng allSettled để nếu 1 trong 2 API lỗi thì trang vẫn không bị trắng
+        const results = await Promise.allSettled([
+          axios.get(`http://localhost:8080/api/v1/clubs/${id}`, { headers }),
+          axios.get(`http://localhost:8080/api/v1/extra-services/club/${id}`, {
+            headers,
+          }),
+        ]);
 
-        // Giả sử cấu trúc trả về là { result: { ... } } như Backend bạn viết
-        setClub(response.data.result || response.data);
+        // Xử lý kết quả Club
+        if (results[0].status === "fulfilled") {
+          const clubData = results[0].value.data;
+          setClub(clubData.result || clubData);
+        } else {
+          console.error("Lỗi API Club:", results[0].reason);
+        }
+
+        // Xử lý kết quả Extra Services
+        if (results[1].status === "fulfilled") {
+          setExtraServices(results[1].value.data || []);
+        } else {
+          console.warn(
+            "Lỗi API Dịch vụ (có thể do chưa có dữ liệu):",
+            results[1].reason
+          );
+        }
       } catch (error) {
-        console.error("Lỗi khi lấy chi tiết sân:", error);
+        console.error("Lỗi hệ thống:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    if (id) fetchClubDetail();
+    if (id) fetchAllData();
   }, [id]);
 
   if (loading)
     return <div className={cx("loading")}>Đang tải thông tin sân...</div>;
   if (!club)
-    return <div className={cx("error")}>Không tìm thấy thông tin sân này!</div>;
+    return (
+      <div className={cx("error")}>
+        Không tìm thấy thông tin sân này hoặc lỗi kết nối!
+      </div>
+    );
 
   return (
     <div className={cx("detailPitch")}>
       <div className={cx("contentWrapper")}>
-        {/* Cột trái */}
+        {/* CỘT TRÁI */}
         <div className={cx("leftColumn")}>
-          {/* Ảnh chính - Lấy từ imageAvatar API */}
           <div className={cx("mainImage")}>
-            <img
-              src={
-                club.imageAvatar ||
-                "https://sieuthicaulong.vn/userfiles/files/image3.jpg"
-              }
-              alt={club.name}
-            />
+            <img src={club.imageAvatar} alt={club.name} />
           </div>
 
-          {/* Gallery - Map từ imageClubs trong Domain */}
           <div className={cx("gallery")}>
             <h2>Hình ảnh sân</h2>
             <div className={cx("galleryImages")}>
-              {club.imageClubs && club.imageClubs.length > 0 ? (
+              {club.imageClubs?.length > 0 ? (
                 club.imageClubs.map((img, index) => (
                   <img
                     key={index}
@@ -89,19 +103,18 @@ const DetailPitch = () => {
             </div>
           </div>
 
-          {/* Bảng giá sân - Map từ pitchPrices trong Domain */}
           <div className={cx("priceList")}>
             <h2>Bảng giá sân</h2>
             <table>
               <thead>
                 <tr>
-                  <th>Loại sân/Dịch vụ</th>
+                  <th>Loại sân</th>
                   <th>Khung giờ</th>
                   <th>Giá (VNĐ)</th>
                 </tr>
               </thead>
               <tbody>
-                {club.pitchPrices && club.pitchPrices.length > 0 ? (
+                {club.pitchPrices?.length > 0 ? (
                   club.pitchPrices.map((price, index) => (
                     <tr key={index}>
                       <td>{price.name}</td>
@@ -109,24 +122,28 @@ const DetailPitch = () => {
                         {formatTime(price.timeStart)} -{" "}
                         {formatTime(price.timeEnd)}
                       </td>
-                      <td>{price.price.toLocaleString()}</td>
+                      <td>{price.price?.toLocaleString()}đ</td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="3">Đang cập nhật bảng giá...</td>
+                    <td colSpan="3">Sân chưa cập nhật bảng giá chính thức.</td>
                   </tr>
                 )}
               </tbody>
             </table>
           </div>
 
-          <button className={cx("bookButton")}>Đặt sân ngay</button>
+          <button
+            className={cx("bookButton")}
+            onClick={handleNavigateToBooking}
+          >
+            ĐẶT SÂN NGAY
+          </button>
 
-          {/* Bình luận - Map từ comments trong Domain */}
           <div className={cx("comments")}>
             <h2>Đánh giá & Bình luận</h2>
-            {club.comments && club.comments.length > 0 ? (
+            {club.comments?.length > 0 ? (
               club.comments.map((comment, index) => (
                 <div key={index} className={cx("commentItem")}>
                   <img
@@ -136,7 +153,7 @@ const DetailPitch = () => {
                   />
                   <div className={cx("commentContent")}>
                     <strong>
-                      Người dùng {comment.user?.name || "Ẩn danh"}
+                      {comment.user?.name || "Người dùng GoPitch"}
                     </strong>
                     <div className={cx("rating")}>⭐ {comment.rate}/5</div>
                     <p>{comment.content}</p>
@@ -144,17 +161,12 @@ const DetailPitch = () => {
                 </div>
               ))
             ) : (
-              <p>Chưa có bình luận nào.</p>
+              <p>Chưa có bình luận nào cho sân này.</p>
             )}
-
-            <div className={cx("commentForm")}>
-              <textarea placeholder="Viết bình luận..." />
-            </div>
-            <button>Gửi</button>
           </div>
         </div>
 
-        {/* Cột phải */}
+        {/* CỘT PHẢI */}
         <div className={cx("rightColumn")}>
           <div className={cx("infoSection")}>
             <h1>{club.name}</h1>
@@ -163,8 +175,10 @@ const DetailPitch = () => {
               🕒 Giờ mở cửa: {formatTime(club.timeStart)} -{" "}
               {formatTime(club.timeEnd)}
             </p>
-            <p>📞 {club.phoneNumber}</p>
-            <p>⭐ {club.active ? "Đang hoạt động" : "Tạm đóng cửa"}</p>
+            <p>📞 Liên hệ: {club.phoneNumber}</p>
+            <p className={cx("status", club.active ? "open" : "closed")}>
+              {club.active ? "● Đang hoạt động" : "● Tạm đóng cửa"}
+            </p>
           </div>
 
           <div className={cx("mapSection")}>
@@ -173,12 +187,51 @@ const DetailPitch = () => {
               title="Google Maps"
               src={`https://maps.google.com/maps?q=${encodeURIComponent(
                 club.address
-              )}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
+              )}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
               width="100%"
-              height="300"
-              style={{ border: 0 }}
+              height="250"
+              style={{ border: 0, borderRadius: "12px" }}
               loading="lazy"
             ></iframe>
+          </div>
+
+          <div className={cx("serviceSection")}>
+            <h2>Dịch vụ & Tiện ích</h2>
+            <div className={cx("serviceTableWrapper")}>
+              {extraServices.length > 0 ? (
+                <table className={cx("serviceTable")}>
+                  <thead>
+                    <tr>
+                      <th>Dịch vụ</th>
+                      <th>Giá</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {extraServices.map((service, index) => (
+                      <tr key={index}>
+                        <td>
+                          {service.name} ({service.unit})
+                        </td>
+                        <td className={cx("servicePrice")}>
+                          {service.price?.toLocaleString()}đ
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <p
+                  style={{
+                    fontSize: "0.9rem",
+                    color: "#888",
+                    textAlign: "center",
+                    padding: "10px",
+                  }}
+                >
+                  Chưa có thông tin dịch vụ đi kèm.
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>
