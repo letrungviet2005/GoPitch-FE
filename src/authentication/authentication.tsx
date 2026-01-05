@@ -1,5 +1,6 @@
 import React from "react";
-const accessToken = localStorage.getItem("accessToken");
+const accessToken =
+  localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
 if (!accessToken) {
-  window.location.href = "/login";
+  window.location.href = "/signin";
 }

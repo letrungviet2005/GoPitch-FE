@@ -1,33 +1,50 @@
+import React from "react";
 import classNames from "classnames/bind";
 import style from "./Pitchs.module.scss";
 
 const cx = classNames.bind(style);
 
-const Pitchs = ({
-  image = "https://via.placeholder.com/600x300?text=No+Image",
-  avatar = "https://via.placeholder.com/150?text=No+Avatar",
-  name = "Chưa có tên sân",
-  address = "Chưa có địa chỉ",
-  hours = "Chưa cập nhật",
-  rating = "N/A",
+interface PitchsProps {
+  image: string;
+  name: string;
+  address: string;
+  hours: string;
+  rating: number;
+  distance?: string | null;
+}
+
+const Pitchs: React.FC<PitchsProps> = ({
+  image,
+  name,
+  address,
+  hours,
+  rating,
+  distance,
 }) => {
   return (
     <div className={cx("pitchCard")}>
-      {/* Nửa trên: Hình ảnh sân */}
       <div className={cx("pitchImage")}>
-        <img src={image} alt={`Sân ${name}`} />
+        <img src={image} alt={name} />
+        {/* Đã xóa distance-tag ở đây */}
       </div>
 
-      {/* Nửa dưới: Thông tin sân */}
       <div className={cx("pitchInfo")}>
-        <div className={cx("pitchAvatar")}>
-          <img src={avatar || image} alt={`Avatar của ${name}`} />
-        </div>
+        {/* Nếu ông có avatar thì để đây, không thì bỏ qua */}
         <div className={cx("pitchDetails")}>
           <h3>{name}</h3>
-          <p>📍 Địa chỉ: {address}</p>
-          <p>🕒 Giờ mở cửa: {hours}</p>
-          <p>⭐ {rating}/5</p>
+          <p className={cx("address")}>📍 {address}</p>
+
+          {/* HIỂN THỊ SỐ KM Ở ĐÂY */}
+          {distance && (
+            <p className={cx("distanceText")}>
+              🏃 Cách đây: <strong>{distance}</strong>
+            </p>
+          )}
+
+          <div className={cx("pitchBottom")}>
+            <span>🕒 {hours}</span>
+            <span>⭐ {rating}</span>
+          </div>
         </div>
       </div>
     </div>

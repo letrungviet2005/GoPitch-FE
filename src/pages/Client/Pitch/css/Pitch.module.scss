@@ -1,81 +1,183 @@
+// --- Variables ---
+$primary-color: #00b894; // Màu xanh ngọc hiện đại (giống màu sân cỏ/thể thao)
+$secondary-color: #2d3436; // Màu chữ chính
+$bg-color: #f5f7fa; // Màu nền xám rất nhạt
+$card-bg: #ffffff;
+$border-color: #dfe6e9;
+$shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+$shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
+$radius-md: 12px;
+$radius-lg: 16px;
+$radius-pill: 50px;
+
+// --- Styles ---
+
 .container {
-  width: 100%; // Chiếm hết chiều ngang
+  width: 100%;
   min-height: 100vh;
-  background-color: #f8fafc;
-  padding: 20px; // Padding nhẹ để không dính sát mép quá
+  background-color: $bg-color;
+  padding: 40px 20px; // Tăng padding trên dưới cho thoáng
   display: flex;
   flex-direction: column;
   align-items: center;
   box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
+// --- Khu vực Thanh tìm kiếm ---
 .searchBar {
-  width: 95%; // Cho thanh search rộng ra theo
-  max-width: 1200px;
-  background: white;
-  padding: 12px 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  max-width: 1280px; // Mở rộng chiều ngang tối đa
+  background: $card-bg;
+  padding: 20px 25px;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-md; // Đổ bóng sâu hơn tạo cảm giác nổi
   display: flex;
-  gap: 15px;
-  margin-bottom: 30px;
+  flex-direction: column; // Trên mobile sẽ xếp dọc
+  gap: 20px;
+  margin-bottom: 40px;
+  border: 1px solid rgba($border-color, 0.5);
+
+  // Giao diện Desktop
+  @media (min-width: 768px) {
+    flex-direction: row;
+    align-items: center;
+    padding: 15px 25px;
+    border-radius: $radius-pill; // Biến thành thanh dài bo tròn
+  }
 
   .input {
-    flex: 1;
-    border: 1px solid #e2e8f0;
-    padding: 10px 15px;
-    border-radius: 8px;
+    flex: 2; // Input chiếm nhiều không gian hơn
+    border: 2px solid transparent; // Viền trong suốt mặc định
+    background-color: #f1f2f6;
+    padding: 14px 24px;
+    border-radius: $radius-pill;
     outline: none;
-    &:focus { border-color: #10b981; }
+    font-size: 1rem;
+    color: $secondary-color;
+    transition: all 0.3s ease;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%23b2bec3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>');
+    background-repeat: no-repeat;
+    background-position: 15px center;
+    padding-left: 45px; // Thụt lề cho icon
+
+    &::placeholder {
+      color: #b2bec3;
+      font-weight: 500;
+    }
+
+    &:focus {
+      background-color: $card-bg;
+      border-color: $primary-color;
+      box-shadow: 0 0 0 3px rgba($primary-color, 0.2);
+    }
   }
 
   .filterGroup {
     display: flex;
     gap: 10px;
+    flex-wrap: wrap; // Cho phép xuống dòng trên màn hình nhỏ
+
     .button {
-      padding: 0 15px;
-      background: #f1f5f9;
-      border: none;
-      border-radius: 8px;
+      padding: 10px 20px;
+      background: $card-bg;
+      border: 1px solid $border-color;
+      border-radius: $radius-pill; // Nút dạng viên thuốc
       cursor: pointer;
-      font-weight: 500;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: $secondary-color;
       white-space: nowrap;
-      &:hover { background: #10b981; color: white; }
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      &:hover {
+        border-color: $primary-color;
+        background-color: rgba($primary-color, 0.05);
+        color: $primary-color;
+        transform: translateY(-2px);
+      }
+
+      // Khi được active (ví dụ sau này ông thêm class active)
+      &.active {
+        background-color: $primary-color;
+        color: white;
+        border-color: $primary-color;
+      }
     }
   }
 }
 
+// --- Khu vực Danh sách sân ---
 .pitchList {
-  width: 100%; // QUAN TRỌNG: Chiếm hết width
+  width: 100%;
+  max-width: 1280px;
   display: grid;
-  // Tự động tính toán số cột dựa trên độ rộng màn hình
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); 
-  gap: 25px;
-  padding: 10px;
+  // Tối ưu lại kích thước card cho hiện đại hơn (khoảng 380px là đẹp)
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); 
+  gap: 30px; // Tăng khoảng cách giữa các card
+  padding: 10px 0;
   box-sizing: border-box;
 }
 
 .pitchItemWrapper {
-  background: white;
-  border-radius: 15px;
+  background: $card-bg;
+  border-radius: $radius-lg;
   overflow: hidden;
-  transition: transform 0.2s;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   cursor: pointer;
-  border: 1px solid #eee;
-  &:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+  border: none; // Bỏ viền cứng
+  box-shadow: $shadow-sm; // Bóng nhẹ mặc định
+
+  &:hover {
+    transform: translateY(-7px); // Bay lên cao hơn chút
+    box-shadow: $shadow-md; // Bóng đổ sâu và mềm hơn
+  }
 }
 
+// --- Các thành phần khác ---
 .paginationWrapper {
-  margin: 40px 0;
+  margin: 50px 0;
   width: 100%;
   display: flex;
   justify-content: center;
-  padding-bottom: 20px;
+}
+
+.loading, .noData {
+  padding: 60px 20px;
+  font-size: 1.2rem;
+  color: #636e72;
+  font-weight: 500;
+  background: $card-bg;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-sm;
+  text-align: center;
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+
+  &::before {
+    content: "🔍";
+    font-size: 3rem;
+    margin-bottom: 10px;
+    opacity: 0.5;
+  }
 }
 
 .loading {
-  padding: 50px;
-  font-size: 1.2rem;
-  color: #10b981;
-  font-weight: bold;
+  color: $primary-color;
+  &::before {
+    content: "⏳";
+    animation: spin 2s infinite linear;
+  }
+}
+
+@keyframes spin {
+    from {transform: rotate(0deg);}
+    to {transform: rotate(360deg);}
 }

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import classNames from "classnames/bind";
 import {
-  User,
   Mail,
   Phone,
   MapPin,
@@ -10,12 +10,16 @@ import {
   Flame,
   Edit3,
   Map as MapIcon,
+  ShieldCheck,
+  Calendar,
+  History, // Thêm icon lịch sử
 } from "lucide-react";
 import styles from "./Profile.module.scss";
 
 const cx = classNames.bind(styles);
 
 interface UserProfile {
+  id: number;
   name: string;
   email: string;
   point: number;
@@ -32,6 +36,7 @@ interface UserProfile {
 const Profile = () => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -39,14 +44,20 @@ const Profile = () => {
         const token =
           localStorage.getItem("accessToken") ||
           sessionStorage.getItem("accessToken");
-        // Giả sử API /me trả về thông tin user hiện tại kèm userInformation
+        if (!token) {
+          setLoading(false);
+          return;
+        }
+
         const response = await axios.get(
-          "http://localhost:8080/api/v1/auth/me",
+          "http://localhost:8080/api/v1/users/me",
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-        setUser(response.data.result || response.data);
+
+        const data = response.data.result || response.data;
+        setUser(data);
       } catch (error) {
         console.error("Lỗi lấy thông tin cá nhân:", error);
       } finally {
@@ -56,91 +67,141 @@ const Profile = () => {
     fetchProfile();
   }, []);
 
-  if (loading) return <div className={cx("loading")}>Đang tải hồ sơ...</div>;
+  if (loading)
+    return (
+      <div className={cx("loadingWrapper")}>
+        <div className={cx("spinner")}></div>
+        <p>Đang tải hồ sơ của bạn...</p>
+      </div>
+    );
+
   if (!user)
-    return <div className={cx("error")}>Vui lòng đăng nhập để xem hồ sơ!</div>;
+    return (
+      <div className={cx("errorContainer")}>
+        <div className={cx("errorIcon")}>🔐</div>
+        <h2>Bạn chưa đăng nhập</h2>
+        <p>Vui lòng đăng nhập để xem và quản lý thông tin cá nhân.</p>
+        <button className={cx("primaryBtn")} onClick={() => navigate("/login")}>
+          Đăng nhập ngay
+        </button>
+      </div>
+    );
 
   return (
     <div className={cx("profilePage")}>
       <div className={cx("container")}>
-        {/* Phần Header & Avatar */}
+        {/* SECTION 1: HEADER & AVATAR */}
         <div className={cx("headerCard")}>
-          <div className={cx("coverPhoto")}></div>
+          <div className={cx("coverPhoto")}>
+            <div className={cx("badge")}>
+              <ShieldCheck size={16} /> Thành viên xác thực
+            </div>
+          </div>
           <div className={cx("profileInfo")}>
             <div className={cx("avatarWrapper")}>
               <img
-                src={`https://ui-avatars.com/api/?name=${user.name}&background=random&size=128`}
+                src={`https://ui-avatars.com/api/?name=${user.name}&background=00b894&color=fff&size=128&bold=true`}
                 alt="Avatar"
               />
             </div>
             <div className={cx("nameSection")}>
               <h1>{user.userInformation?.fullName || user.name}</h1>
-              <p>Thành viên của GoPitch</p>
+              <div className={cx("tags")}>
+                <span className={cx("tag")}>
+                  <Calendar size={14} /> Tham gia 2024
+                </span>
+                <span className={cx("tag")}>
+                  <Award size={14} /> Hạng Vàng
+                </span>
+              </div>
             </div>
-            <button className={cx("editBtn")}>
-              <Edit3 size={18} /> Chỉnh sửa hồ sơ
-            </button>
+
+            {/* NHÓM NÚT HÀNH ĐỘNG */}
+            <div className={cx("actionGroup")}>
+              <button
+                className={cx("historyBtn")}
+                onClick={() => navigate("/booking-history")}
+              >
+                <History size={18} /> Lịch sử đặt sân
+              </button>
+              <button className={cx("editBtn")}>
+                <Edit3 size={18} /> Chỉnh sửa hồ sơ
+              </button>
+            </div>
           </div>
         </div>
 
         <div className={cx("mainGrid")}>
-          {/* Cột Trái: Thành tích */}
+          {/* CỘT TRÁI: THÀNH TÍCH */}
           <div className={cx("leftCol")}>
-            <div className={cx("statCard")}>
-              <h3>Thành tích sân cỏ</h3>
-              <div className={cx("statItem")}>
-                <div className={cx("icon", "point")}>
-                  <Award />
+            <div className={cx("card", "statCard")}>
+              <h3>Thống kê hoạt động</h3>
+              <div className={cx("statGrid")}>
+                <div className={cx("statBox")}>
+                  <div className={cx("iconBox", "point")}>
+                    <Award size={24} />
+                  </div>
+                  <div className={cx("statData")}>
+                    <strong>{user.point.toLocaleString()}</strong>
+                    <span>Điểm GP</span>
+                  </div>
                 </div>
-                <div className={cx("details")}>
-                  <span>Điểm tích lũy</span>
-                  <strong>{user.point} GP</strong>
-                </div>
-              </div>
-              <div className={cx("statItem")}>
-                <div className={cx("icon", "streak")}>
-                  <Flame />
-                </div>
-                <div className={cx("details")}>
-                  <span>Chuỗi hoạt động</span>
-                  <strong>{user.streakCount} ngày</strong>
+                <div className={cx("statBox")}>
+                  <div className={cx("iconBox", "streak")}>
+                    <Flame size={24} />
+                  </div>
+                  <div className={cx("statData")}>
+                    <strong>{user.streakCount}</strong>
+                    <span>Ngày Streak</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Cột Phải: Thông tin chi tiết */}
+          {/* CỘT PHẢI: CHI TIẾT THÔNG TIN */}
           <div className={cx("rightCol")}>
-            <div className={cx("infoCard")}>
-              <h3>Thông tin cá nhân</h3>
+            <div className={cx("card", "infoCard")}>
+              <h3>Thông tin tài khoản</h3>
               <div className={cx("infoList")}>
                 <div className={cx("infoItem")}>
-                  <Mail size={20} />
-                  <div>
+                  <div className={cx("itemIcon")}>
+                    <Mail />
+                  </div>
+                  <div className={cx("itemContent")}>
                     <label>Email</label>
                     <p>{user.email}</p>
                   </div>
                 </div>
+
                 <div className={cx("infoItem")}>
-                  <Phone size={20} />
-                  <div>
+                  <div className={cx("itemIcon")}>
+                    <Phone />
+                  </div>
+                  <div className={cx("itemContent")}>
                     <label>Số điện thoại</label>
                     <p>
                       {user.userInformation?.phoneNumber || "Chưa cập nhật"}
                     </p>
                   </div>
                 </div>
+
                 <div className={cx("infoItem")}>
-                  <MapPin size={20} />
-                  <div>
+                  <div className={cx("itemIcon")}>
+                    <MapPin />
+                  </div>
+                  <div className={cx("itemContent")}>
                     <label>Địa chỉ</label>
                     <p>{user.userInformation?.address || "Chưa cập nhật"}</p>
                   </div>
                 </div>
+
                 <div className={cx("infoItem")}>
-                  <MapIcon size={20} />
-                  <div>
-                    <label>Vị trí tọa độ (GPS)</label>
+                  <div className={cx("itemIcon")}>
+                    <MapIcon />
+                  </div>
+                  <div className={cx("itemContent")}>
+                    <label>GPS</label>
                     <p>
                       {user.userInformation?.latitude
                         ? `${user.userInformation.latitude}, ${user.userInformation.longitude}`

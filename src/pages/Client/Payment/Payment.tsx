@@ -2,6 +2,17 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import classNames from "classnames/bind";
 import axios from "axios";
+import {
+  User,
+  Phone,
+  Mail,
+  MapPin,
+  CreditCard,
+  CheckCircle2,
+  ChevronLeft,
+  Loader2,
+  ShieldCheck,
+} from "lucide-react";
 import styles from "./Payment.module.scss";
 
 const cx = classNames.bind(styles);
@@ -10,182 +21,202 @@ const Payment: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Lấy dữ liệu từ trang Booking chuyển sang
+  // 1. Lấy dữ liệu từ trang Booking chuyển sang
   const { selectedSlots, totalAmount, clubId, clubName } = location.state || {};
 
   const [userInfo, setUserInfo] = useState<any>(null);
-  const [file, setFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
 
   useEffect(() => {
-    // 1. Nếu không có dữ liệu booking, đá về trang chủ
     if (!selectedSlots) {
       navigate("/");
       return;
     }
 
-    // 2. Lấy thông tin User hiện tại (từ LocalStorage hoặc API)
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) setUserInfo(JSON.parse(storedUser));
+    const fetchUserData = async () => {
+      try {
+        const token =
+          localStorage.getItem("accessToken") ||
+          sessionStorage.getItem("accessToken");
+        if (!token) {
+          navigate("/login");
+          return;
+        }
+
+        const response = await axios.get(
+          "http://localhost:8080/api/v1/users/me",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        setUserInfo(response.data.result || response.data);
+      } catch (error) {
+        console.error("Lỗi lấy thông tin user:", error);
+      } finally {
+        setPageLoading(false);
+      }
+    };
+
+    fetchUserData();
   }, [selectedSlots, navigate]);
 
-  // Xử lý chọn ảnh
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const selectedFile = e.target.files[0];
-      setFile(selectedFile);
-      setPreviewUrl(URL.createObjectURL(selectedFile)); // Tạo link xem trước
-    }
-  };
-
-  const handleConfirmPayment = async () => {
-    if (!file) {
-      alert("Vui lòng tải ảnh minh chứng chuyển khoản!");
-      return;
-    }
-
+  // 2. XỬ LÝ THANH TOÁN QUA PAYOS
+  const handlePayOSPayment = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("accessToken");
+      const token =
+        localStorage.getItem("accessToken") ||
+        sessionStorage.getItem("accessToken");
 
-      // Sử dụng FormData để upload file
-      const formData = new FormData();
-      formData.append("paymentProof", file);
-      formData.append("clubId", clubId);
-      formData.append("totalAmount", totalAmount.toString());
-      formData.append("slots", JSON.stringify(selectedSlots));
+      // --- BỔ SUNG ĐẦY ĐỦ Ở ĐÂY ---
+      // Lưu toàn bộ thông tin cần thiết vào cache trước khi nhảy sang trang PayOS
+      localStorage.setItem("pending_slots", JSON.stringify(selectedSlots));
+      localStorage.setItem("pending_clubId", clubId.toString());
+      localStorage.setItem("pending_totalAmount", totalAmount.toString());
+      // ----------------------------
 
-      // Gọi API gửi đơn đặt sân (giả sử endpoint là /bookings)
-      await axios.post("http://localhost:8080/api/v1/bookings", formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
+      const response = await axios.post(
+        "http://localhost:8080/api/v1/payment/create-payment-link",
+        {
+          amount: totalAmount,
+          clubName: clubName,
+          clubId: clubId,
         },
-      });
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-      alert("Đặt sân thành công! Chờ chủ sân xác nhận.");
-      navigate("/profile/bookings"); // Chuyển về trang lịch sử đặt sân
+      if (response.data.checkoutUrl) {
+        // Khi dòng này chạy, trình duyệt sẽ rời khỏi trang web của ông
+        // nên mọi state trong React sẽ bị mất. Đó là lý do ta phải lưu vào localStorage.
+        window.location.href = response.data.checkoutUrl;
+      }
     } catch (error) {
-      console.error(error);
-      alert("Có lỗi xảy ra khi gửi thông tin thanh toán.");
+      console.error("Lỗi:", error);
+      alert("Có lỗi xảy ra khi khởi tạo thanh toán!");
     } finally {
       setLoading(false);
     }
   };
 
+  if (pageLoading)
+    return (
+      <div className={cx("loading-screen")}>
+        <Loader2 className={cx("spin")} /> Đang chuẩn bị đơn hàng...
+      </div>
+    );
+
   return (
     <div className={cx("payment-page")}>
       <div className={cx("container")}>
+        <button className={cx("back-btn")} onClick={() => navigate(-1)}>
+          <ChevronLeft size={20} /> Quay lại
+        </button>
+
         <header className={cx("header")}>
-          <h1>Thanh toán đặt sân</h1>
+          <h1>Xác nhận & Thanh toán</h1>
+          <p>Sử dụng cổng thanh toán an toàn PayOS</p>
         </header>
 
         <div className={cx("content-grid")}>
-          {/* CỘT TRÁI: THÔNG TIN ĐƠN HÀNG */}
+          {/* CỘT TRÁI: THÔNG TIN TỔNG QUAN */}
           <div className={cx("info-section")}>
             <section className={cx("card")}>
-              <h3>
-                <i className="fa-solid fa-location-dot"></i> Thông tin sân
-              </h3>
-              <div className={cx("detail-row")}>
-                <span>Câu lạc bộ:</span>
-                <strong>{clubName}</strong>
+              <div className={cx("card-header")}>
+                <MapPin size={20} className={cx("icon")} />
+                <h3>Thông tin sân đặt</h3>
               </div>
+              <div className={cx("club-name")}>{clubName}</div>
               <div className={cx("slots-list")}>
                 {selectedSlots?.map((slot: any, idx: number) => (
                   <div key={idx} className={cx("slot-item")}>
-                    <span>
-                      {slot.date} | {slot.time}
+                    <div className={cx("slot-info")}>
+                      <span className={cx("date")}>{slot.date}</span>
+                      <span className={cx("time")}>
+                        {slot.time} • {slot.pitchName}
+                      </span>
+                    </div>
+                    <span className={cx("price")}>
+                      {slot.price.toLocaleString()}đ
                     </span>
-                    <span>{slot.pitchName}</span>
-                    <strong>{slot.price.toLocaleString()}đ</strong>
                   </div>
                 ))}
               </div>
             </section>
 
             <section className={cx("card")}>
-              <h3>
-                <i className="fa-solid fa-user"></i> Người đặt sân
-              </h3>
-              <div className={cx("detail-row")}>
-                <span>Họ tên:</span>
-                <strong>{userInfo?.fullName || "Khách hàng"}</strong>
+              <div className={cx("card-header")}>
+                <User size={20} className={cx("icon")} />
+                <h3>Thông tin người đặt</h3>
               </div>
-              <div className={cx("detail-row")}>
-                <span>Số điện thoại:</span>
-                <strong>{userInfo?.phone || "Chưa cập nhật"}</strong>
+              <div className={cx("user-details")}>
+                <div className={cx("detail-item")}>
+                  <User size={16} />{" "}
+                  <span>
+                    {userInfo?.userInformation?.fullName || userInfo?.name}
+                  </span>
+                </div>
+                <div className={cx("detail-item")}>
+                  <Phone size={16} />{" "}
+                  <span>
+                    {userInfo?.userInformation?.phoneNumber || "Chưa có SĐT"}
+                  </span>
+                </div>
+                <div className={cx("detail-item")}>
+                  <Mail size={16} /> <span>{userInfo?.email}</span>
+                </div>
               </div>
             </section>
           </div>
 
-          {/* CỘT PHẢI: THANH TOÁN & UPLOAD */}
+          {/* CỘT PHẢI: THANH TOÁN QUA PAYOS */}
           <div className={cx("action-section")}>
             <section className={cx("card", "payment-card")}>
-              <div className={cx("total-box")}>
-                <span>Tổng số tiền:</span>
-                <h2 className={cx("amount")}>
+              <div className={cx("total-section")}>
+                <span>Tổng thanh toán</span>
+                <div className={cx("amount")}>
                   {totalAmount?.toLocaleString()} VNĐ
-                </h2>
-              </div>
-
-              <div className={cx("bank-info")}>
-                <p>Vui lòng chuyển khoản theo thông tin:</p>
-                <div className={cx("bank-details")}>
-                  <p>
-                    Ngân hàng: <strong>MB Bank</strong>
-                  </p>
-                  <p>
-                    Số TK: <strong>1234567890</strong>
-                  </p>
-                  <p>
-                    Chủ TK: <strong>NGUYEN VAN A</strong>
-                  </p>
-                  <p>
-                    Nội dung:{" "}
-                    <strong>
-                      {userInfo?.phone} - {clubName}
-                    </strong>
-                  </p>
                 </div>
               </div>
 
-              <div className={cx("upload-box")}>
-                <label>Tải lên ảnh xác nhận (Bill chuyển khoản):</label>
-                <div
-                  className={cx("upload-area", { hasFile: !!previewUrl })}
-                  onClick={() => document.getElementById("fileInput")?.click()}
-                >
-                  {previewUrl ? (
-                    <img
-                      src={previewUrl}
-                      alt="Proof"
-                      className={cx("preview-img")}
-                    />
-                  ) : (
-                    <div className={cx("placeholder")}>
-                      <span className={cx("icon")}>📷</span>
-                      <p>Bấm để tải ảnh lên</p>
-                    </div>
-                  )}
+              <div className={cx("payos-info-box")}>
+                <div className={cx("payos-header")}>
+                  <CreditCard size={20} color="#00b894" />
+                  <span>Cổng thanh toán PayOS</span>
                 </div>
-                <input
-                  id="fileInput"
-                  type="file"
-                  accept="image/*"
-                  hidden
-                  onChange={handleFileChange}
-                />
+                <ul className={cx("benefit-list")}>
+                  <li>
+                    <ShieldCheck size={14} /> Thanh toán an toàn qua QR Code
+                  </li>
+                  <li>
+                    <ShieldCheck size={14} /> Xác nhận tức thì (Instant
+                    Confirmation)
+                  </li>
+                  <li>
+                    <ShieldCheck size={14} /> Hỗ trợ tất cả ngân hàng Việt Nam
+                  </li>
+                </ul>
               </div>
 
               <button
-                className={cx("confirm-btn")}
-                disabled={loading || !file}
-                onClick={handleConfirmPayment}
+                className={cx("confirm-btn", "payos-btn")}
+                disabled={loading}
+                onClick={handlePayOSPayment}
               >
-                {loading ? "ĐANG XỬ LÝ..." : "XÁC NHẬN ĐÃ THANH TOÁN"}
+                {loading ? (
+                  <Loader2 className={cx("spin")} />
+                ) : (
+                  <>
+                    <CheckCircle2 size={20} /> THANH TOÁN NGAY
+                  </>
+                )}
               </button>
+
+              <p className={cx("secure-text")}>
+                Bằng cách nhấn thanh toán, bạn đồng ý với điều khoản sử dụng của
+                GoPitch.
+              </p>
             </section>
           </div>
         </div>

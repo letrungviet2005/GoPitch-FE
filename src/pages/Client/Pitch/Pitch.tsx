@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import classNames from "classnames/bind";
 import style from "./css/Pitch.module.scss";
 import Pitchs from "../../../components/pitch/Pitchs";
 import Pagination from "../../../components/pagination/Pagination";
+import { getStoredLocation } from "../../../hooks/locationHandler";
+import { calculateDistance } from "../../../utils/distanceCalculator";
 
 const cx = classNames.bind(style);
 
@@ -11,13 +13,15 @@ const Pitch: React.FC = () => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
-  const pitchesPerPage = 12;
   const [totalPages, setTotalPages] = useState(1);
   const [pitches, setPitches] = useState<any[]>([]);
-
-  // State cho tìm kiếm
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+
+  const pitchesPerPage = 12;
+
+  // 1. Lấy tọa độ người dùng từ Cookie/Hook
+  const userCoords = getStoredLocation();
 
   const formatTime = (timeString: string) => {
     if (!timeString) return "";
@@ -25,17 +29,16 @@ const Pitch: React.FC = () => {
     return parts.length >= 2 ? `${parts[0]}:${parts[1]}` : timeString;
   };
 
-  // 1. Xử lý Debounce: Đợi người dùng ngừng gõ 500ms mới cập nhật debouncedSearchTerm
+  // 2. Xử lý Debounce cho ô tìm kiếm
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
-      setCurrentPage(1); // Reset về trang 1 khi tìm kiếm từ khóa mới
+      setCurrentPage(1);
     }, 500);
-
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // 2. Fetch dữ liệu (Dùng chung cho cả lấy tất cả và tìm kiếm)
+  // 3. Fetch dữ liệu và Tính toán khoảng cách
   useEffect(() => {
     const fetchPitches = async () => {
       const token =
@@ -46,12 +49,8 @@ const Pitch: React.FC = () => {
       try {
         setLoading(true);
 
-        // Quyết định URL: Nếu có từ khóa thì gọi /search, không thì gọi lấy tất cả
-        // Lưu ý: Backend Spring Pageable bắt đầu từ 0 nên lấy currentPage - 1
-        let url = `http://localhost:8080/api/v1/clubs?page=${
-          currentPage - 1
-        }&size=${pitchesPerPage}`;
-
+        // Xây dựng URL tùy theo có tìm kiếm hay không
+        let url = `http://localhost:8080/api/v1/clubs?page=${currentPage}&size=${pitchesPerPage}`;
         if (debouncedSearchTerm) {
           url = `http://localhost:8080/api/v1/clubs/search?keyword=${encodeURIComponent(
             debouncedSearchTerm
@@ -66,10 +65,34 @@ const Pitch: React.FC = () => {
         });
 
         const data = await response.json();
+        console.log("Fetched pitches data:", data);
         const actualData = data.result ? data : data.data || data;
+        let rawPitches = actualData.result || [];
 
-        setPitches(actualData.result || []);
+        // --- TÍNH KHOẢNG CÁCH NGAY KHI CÓ DỮ LIỆU ---
+        if (userCoords && userCoords.lat && userCoords.lng) {
+          rawPitches = rawPitches.map((pitch: any) => {
+            // Kiểm tra nếu sân có đủ tọa độ từ BE
+            if (pitch.latitude && pitch.longitude) {
+              const dist = calculateDistance(
+                userCoords.lat,
+                userCoords.lng,
+                Number(pitch.latitude),
+                Number(pitch.longitude)
+              );
+              console.log(`Khoảng cách đến sân ${pitch.name}: ${dist} km`);
+              return { ...pitch, distance: dist };
+            }
+            return pitch;
+          });
 
+          // Tùy chọn: Sắp xếp danh sách theo khoảng cách gần nhất
+          rawPitches.sort(
+            (a: any, b: any) => (a.distance || 999) - (b.distance || 999)
+          );
+        }
+
+        setPitches(rawPitches);
         if (actualData.meta) {
           setTotalPages(actualData.meta.pages || 1);
         }
@@ -82,7 +105,7 @@ const Pitch: React.FC = () => {
 
     fetchPitches();
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [currentPage, debouncedSearchTerm]); // Chạy lại khi đổi trang HOẶC khi từ khóa debounce thay đổi
+  }, [currentPage, debouncedSearchTerm, userCoords?.lat, userCoords?.lng]);
 
   const handlePitchClick = (id: number) => {
     navigate(`/detailpitch/${id}`);
@@ -90,13 +113,14 @@ const Pitch: React.FC = () => {
 
   return (
     <div className={cx("container")}>
+      {/* Search Bar */}
       <div className={cx("searchBar")}>
         <input
           type="text"
           placeholder="Tìm kiếm tên sân hoặc địa chỉ..."
           className={cx("input")}
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)} // Cập nhật ngay lập tức để input mượt
+          onChange={(e) => setSearchTerm(e.target.value)}
         />
         <div className={cx("filterGroup")}>
           <button
@@ -120,6 +144,7 @@ const Pitch: React.FC = () => {
         </div>
       </div>
 
+      {/* Loading State */}
       {loading ? (
         <div className={cx("loading")}>Đang tìm kiếm sân phù hợp...</div>
       ) : (
@@ -140,6 +165,12 @@ const Pitch: React.FC = () => {
                     pitch.timeEnd
                   )}`}
                   rating={4.5}
+                  // HIỂN THỊ KHOẢNG CÁCH (Lấy 1 chữ số thập phân)
+                  distance={
+                    pitch.distance !== undefined
+                      ? `${pitch.distance.toFixed(1)} km`
+                      : null
+                  }
                 />
               </div>
             ))
@@ -154,6 +185,7 @@ const Pitch: React.FC = () => {
         </div>
       )}
 
+      {/* Pagination */}
       {totalPages > 1 && (
         <div className={cx("paginationWrapper")}>
           <Pagination

@@ -1,44 +1,118 @@
+$primary-color: #00b894; // Xanh ngọc hiện đại
+$text-main: #2d3436;
+$header-height: 75px;
+
+.header {
+  position: fixed; // Cố định trên cùng
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: $header-height;
+  z-index: 1000;
+   background-color: rgba(255, 255, 255, 0.9); // Mặc định trong suốt
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+
+ 
+}
+
 .container {
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 25px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 70px;
-  background-color: #37883d;
-  color: white;
-  padding: 0 20px;
 }
 
 .logo {
-  font-size: 1.8rem;
-  font-weight: bold;
-  text-transform: uppercase;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+
+  .logoText { color: $text-main; }
+  .logoHighlight { color: $primary-color; }
 }
 
 .navigation {
   display: flex;
+  gap: 10px;
+
+  .navItem {
+    background: transparent;
+    border: none;
+    padding: 10px 18px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #636e72;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+
+    &:hover {
+      color: $primary-color;
+      background-color: rgba($primary-color, 0.05);
+    }
+
+    &.active {
+      color: white;
+      background-color: $primary-color;
+      box-shadow: 0 4px 12px rgba($primary-color, 0.3);
+    }
+  }
+}
+
+.actions {
+  display: flex;
+  align-items: center;
   gap: 20px;
-  font-size: 1rem;
-}
-
-.navigation a {
-  text-decoration: none;
-  color: white;
-  transition: color 0.3s;
-}
-
-.navigation a:hover {
-  color: #c1ffc1;
 }
 
 .userProfile {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  cursor: pointer;
+  padding: 5px 12px;
+  border-radius: 50px;
+  border: 1px solid #dfe6e9;
+  transition: all 0.2s;
+
+  &:hover {
+    background-color: #f1f2f6;
+    border-color: #b2bec3;
+  }
+
+  .avatarWrapper {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid $primary-color;
+    
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .userName {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: $text-main;
+  }
 }
 
-.userProfile img {
-  width: 35px;
-  height: 35px;
-  border-radius: 50%;
-  object-fit: cover;
+// Responsive
+@media (max-width: 768px) {
+  .navigation { display: none; } // Tạm ẩn menu trên mobile, sau này làm Menu Hamburger
 }

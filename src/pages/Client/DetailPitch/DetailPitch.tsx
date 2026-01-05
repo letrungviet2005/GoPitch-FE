@@ -9,19 +9,15 @@ const cx = classNames.bind(styles);
 
 const DetailPitch = () => {
   const { id } = useParams();
-  const [club, setClub] = useState(null);
-  const [extraServices, setExtraServices] = useState([]);
+  const [club, setClub] = useState<any>(null);
+  const [extraServices, setExtraServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const formatTime = (timeString) => {
+  const formatTime = (timeString: string) => {
     if (!timeString) return "";
     const parts = timeString.split(":");
     return parts.length >= 2 ? `${parts[0]}:${parts[1]}` : timeString;
-  };
-
-  const handleNavigateToBooking = () => {
-    navigate(`/bookingpitch/${id}`);
   };
 
   useEffect(() => {
@@ -33,7 +29,6 @@ const DetailPitch = () => {
           sessionStorage.getItem("accessToken");
         const headers = { Authorization: `Bearer ${token}` };
 
-        // Sử dụng allSettled để nếu 1 trong 2 API lỗi thì trang vẫn không bị trắng
         const results = await Promise.allSettled([
           axios.get(`http://localhost:8080/api/v1/clubs/${id}`, { headers }),
           axios.get(`http://localhost:8080/api/v1/extra-services/club/${id}`, {
@@ -41,22 +36,12 @@ const DetailPitch = () => {
           }),
         ]);
 
-        // Xử lý kết quả Club
         if (results[0].status === "fulfilled") {
           const clubData = results[0].value.data;
           setClub(clubData.result || clubData);
-        } else {
-          console.error("Lỗi API Club:", results[0].reason);
         }
-
-        // Xử lý kết quả Extra Services
         if (results[1].status === "fulfilled") {
           setExtraServices(results[1].value.data || []);
-        } else {
-          console.warn(
-            "Lỗi API Dịch vụ (có thể do chưa có dữ liệu):",
-            results[1].reason
-          );
         }
       } catch (error) {
         console.error("Lỗi hệ thống:", error);
@@ -64,155 +49,144 @@ const DetailPitch = () => {
         setLoading(false);
       }
     };
-
     if (id) fetchAllData();
   }, [id]);
 
   if (loading)
-    return <div className={cx("loading")}>Đang tải thông tin sân...</div>;
-  if (!club)
     return (
-      <div className={cx("error")}>
-        Không tìm thấy thông tin sân này hoặc lỗi kết nối!
+      <div className={cx("loaderWrapper")}>
+        <div className={cx("loader")}></div>
+        <p>Đang tải thông tin sân...</p>
       </div>
     );
 
-  return (
-    <div className={cx("detailPitch")}>
-      <div className={cx("contentWrapper")}>
-        {/* CỘT TRÁI */}
-        <div className={cx("leftColumn")}>
-          <div className={cx("mainImage")}>
-            <img src={club.imageAvatar} alt={club.name} />
-          </div>
+  if (!club)
+    return <div className={cx("error")}>Không tìm thấy thông tin sân!</div>;
 
-          <div className={cx("gallery")}>
-            <h2>Hình ảnh sân</h2>
-            <div className={cx("galleryImages")}>
-              {club.imageClubs?.length > 0 ? (
-                club.imageClubs.map((img, index) => (
-                  <img
-                    key={index}
-                    src={img.imageUrl}
-                    alt={`Gallery ${index}`}
-                  />
-                ))
-              ) : (
-                <p>Chưa có hình ảnh bổ sung.</p>
-              )}
+  // Xử lý ảnh: Ưu tiên Avatar đầu tiên, sau đó là các ảnh trong list imageClubs
+  const allImages = [
+    club.imageAvatar,
+    ...(club.imageClubs?.map((img: any) => img.imageUrl) || []),
+  ].filter(Boolean);
+
+  return (
+    <div className={cx("container")}>
+      {/* --- HEADER --- */}
+      <header className={cx("header")}>
+        <div className={cx("headerInfo")}>
+          <h1>{club.name}</h1>
+          <div className={cx("subHeader")}>
+            <span className={cx("rating")}>
+              ⭐ {club.rating || "5.0"} (100+ đánh giá)
+            </span>
+            <span className={cx("address")}>📍 {club.address}</span>
+          </div>
+        </div>
+        <div className={cx("headerActions")}>
+          <button className={cx("btnOutline")}>📤 Chia sẻ</button>
+          <button className={cx("btnOutline")}>❤️ Lưu lại</button>
+        </div>
+      </header>
+
+      {/* --- GALLERY GRID --- */}
+      <section
+        className={cx(
+          "gallerySection",
+          `grid-${Math.min(allImages.length, 5)}`
+        )}
+      >
+        {allImages.slice(0, 5).map((url, idx) => (
+          <div key={idx} className={cx("imageItem", `img-${idx}`)}>
+            <img src={url} alt={`Pitch ${idx}`} />
+            {idx === 4 && allImages.length > 5 && (
+              <div className={cx("overlay")}>+{allImages.length - 5} ảnh</div>
+            )}
+          </div>
+        ))}
+      </section>
+
+      <div className={cx("mainContent")}>
+        {/* --- CỘT TRÁI --- */}
+        <div className={cx("leftCol")}>
+          <div className={cx("card")}>
+            <h2>Giới thiệu sân</h2>
+            <p className={cx("description")}>
+              Chào mừng bạn đến với <strong>{club.name}</strong>. Sân được đầu
+              tư cơ sở vật chất hiện đại, mặt sàn chống trơn trượt, hệ thống
+              chiếu sáng đạt chuẩn thi đấu. Môi trường thể thao văn minh, sạch
+              sẽ và đầy đủ tiện nghi.
+            </p>
+            <div className={cx("quickInfo")}>
+              <div className={cx("infoItem")}>
+                <span className={cx("icon")}>🕒</span>
+                <div>
+                  <p className={cx("label")}>Giờ hoạt động</p>
+                  <p className={cx("val")}>
+                    {formatTime(club.timeStart)} - {formatTime(club.timeEnd)}
+                  </p>
+                </div>
+              </div>
+              <div className={cx("infoItem")}>
+                <span className={cx("icon")}>📞</span>
+                <div>
+                  <p className={cx("label")}>Liên hệ</p>
+                  <p className={cx("val")}>{club.phoneNumber}</p>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className={cx("priceList")}>
-            <h2>Bảng giá sân</h2>
-            <table>
-              <thead>
-                <tr>
-                  <th>Loại sân</th>
-                  <th>Khung giờ</th>
-                  <th>Giá (VNĐ)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {club.pitchPrices?.length > 0 ? (
-                  club.pitchPrices.map((price, index) => (
-                    <tr key={index}>
-                      <td>{price.name}</td>
+          {/* BẢNG GIÁ SÂN */}
+          <div className={cx("card")}>
+            <h2>Bảng giá thuê sân</h2>
+            <div className={cx("tableWrapper")}>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Loại sân</th>
+                    <th>Khung giờ</th>
+                    <th>Đơn giá / Giờ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {club.pitchPrices?.map((price: any, idx: number) => (
+                    <tr key={idx}>
+                      <td>
+                        <strong>{price.name}</strong>
+                      </td>
                       <td>
                         {formatTime(price.timeStart)} -{" "}
                         {formatTime(price.timeEnd)}
                       </td>
-                      <td>{price.price?.toLocaleString()}đ</td>
+                      <td className={cx("priceHighlight")}>
+                        {price.price?.toLocaleString()}đ
+                      </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="3">Sân chưa cập nhật bảng giá chính thức.</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
 
-          <button
-            className={cx("bookButton")}
-            onClick={handleNavigateToBooking}
-          >
-            ĐẶT SÂN NGAY
-          </button>
-
-          <div className={cx("comments")}>
-            <h2>Đánh giá & Bình luận</h2>
-            {club.comments?.length > 0 ? (
-              club.comments.map((comment, index) => (
-                <div key={index} className={cx("commentItem")}>
-                  <img
-                    src={`https://i.pravatar.cc/40?u=${comment.id}`}
-                    alt="User"
-                    className={cx("avatar")}
-                  />
-                  <div className={cx("commentContent")}>
-                    <strong>
-                      {comment.user?.name || "Người dùng GoPitch"}
-                    </strong>
-                    <div className={cx("rating")}>⭐ {comment.rate}/5</div>
-                    <p>{comment.content}</p>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p>Chưa có bình luận nào cho sân này.</p>
-            )}
-          </div>
-        </div>
-
-        {/* CỘT PHẢI */}
-        <div className={cx("rightColumn")}>
-          <div className={cx("infoSection")}>
-            <h1>{club.name}</h1>
-            <p className={cx("address")}>📍 {club.address}</p>
-            <p>
-              🕒 Giờ mở cửa: {formatTime(club.timeStart)} -{" "}
-              {formatTime(club.timeEnd)}
-            </p>
-            <p>📞 Liên hệ: {club.phoneNumber}</p>
-            <p className={cx("status", club.active ? "open" : "closed")}>
-              {club.active ? "● Đang hoạt động" : "● Tạm đóng cửa"}
-            </p>
-          </div>
-
-          <div className={cx("mapSection")}>
-            <h2>Vị trí trên bản đồ</h2>
-            <iframe
-              title="Google Maps"
-              src={`https://maps.google.com/maps?q=${encodeURIComponent(
-                club.address
-              )}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
-              width="100%"
-              height="250"
-              style={{ border: 0, borderRadius: "12px" }}
-              loading="lazy"
-            ></iframe>
-          </div>
-
-          <div className={cx("serviceSection")}>
+          {/* BẢNG DỊCH VỤ ĐI KÈM */}
+          <div className={cx("card")}>
             <h2>Dịch vụ & Tiện ích</h2>
-            <div className={cx("serviceTableWrapper")}>
+            <div className={cx("tableWrapper")}>
               {extraServices.length > 0 ? (
                 <table className={cx("serviceTable")}>
                   <thead>
                     <tr>
                       <th>Dịch vụ</th>
-                      <th>Giá</th>
+                      <th>Đơn vị</th>
+                      <th>Đơn giá</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {extraServices.map((service, index) => (
-                      <tr key={index}>
-                        <td>
-                          {service.name} ({service.unit})
-                        </td>
-                        <td className={cx("servicePrice")}>
+                    {extraServices.map((service, idx) => (
+                      <tr key={idx}>
+                        <td className={cx("serviceName")}>🔹 {service.name}</td>
+                        <td>{service.unit}</td>
+                        <td className={cx("priceHighlight")}>
                           {service.price?.toLocaleString()}đ
                         </td>
                       </tr>
@@ -220,20 +194,84 @@ const DetailPitch = () => {
                   </tbody>
                 </table>
               ) : (
-                <p
-                  style={{
-                    fontSize: "0.9rem",
-                    color: "#888",
-                    textAlign: "center",
-                    padding: "10px",
-                  }}
-                >
-                  Chưa có thông tin dịch vụ đi kèm.
+                <p className={cx("emptyText")}>
+                  Sân hiện chưa cập nhật các dịch vụ bổ sung.
                 </p>
               )}
             </div>
           </div>
+
+          <div className={cx("card")}>
+            <h2>Đánh giá</h2>
+            <div className={cx("commentList")}>
+              {club.comments?.length > 0 ? (
+                club.comments.map((comment: any, idx: number) => (
+                  <div key={idx} className={cx("commentItem")}>
+                    <img
+                      src={`https://i.pravatar.cc/150?u=${idx}`}
+                      alt="user"
+                    />
+                    <div className={cx("commentBody")}>
+                      <div className={cx("commentHeader")}>
+                        <strong>
+                          {comment.user?.name || "Hội viên GoPitch"}
+                        </strong>
+                        <span>⭐ {comment.rate}/5</span>
+                      </div>
+                      <p>{comment.content}</p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className={cx("emptyText")}>Chưa có bình luận nào.</p>
+              )}
+            </div>
+          </div>
         </div>
+
+        {/* --- CỘT PHẢI (STICKY) --- */}
+        <aside className={cx("rightCol")}>
+          <div className={cx("bookingSticky")}>
+            <div className={cx("bookingCard")}>
+              <div className={cx("pricePreview")}>
+                <span>Giá thuê chỉ từ</span>
+                <h3>
+                  {club.pitchPrices?.[0]?.price?.toLocaleString() || "0"}đ{" "}
+                  <span>/ giờ</span>
+                </h3>
+              </div>
+
+              <button
+                className={cx("primaryBtn")}
+                onClick={() => navigate(`/bookingpitch/${id}`)}
+              >
+                ĐẶT SÂN NGAY
+              </button>
+
+              <div className={cx("features")}>
+                <div className={cx("featureItem")}>
+                  ✔️ Hoàn tiền nếu hủy trước 24h
+                </div>
+                <div className={cx("featureItem")}>✔️ Thanh toán linh hoạt</div>
+              </div>
+
+              <hr />
+
+              <div className={cx("miniMap")}>
+                <h4>Vị trí sân</h4>
+                <iframe
+                  title="map"
+                  src={`https://maps.google.com/maps?q=${encodeURIComponent(
+                    club.address
+                  )}&output=embed`}
+                  width="100%"
+                  height="180"
+                  style={{ border: 0, borderRadius: "12px" }}
+                ></iframe>
+              </div>
+            </div>
+          </div>
+        </aside>
       </div>
     </div>
   );

@@ -1,0 +1,150 @@
+.history-container {
+  width: 90%;          // Chiếm 90% chiều rộng màn hình
+  max-width: 1400px;   // Giới hạn tối đa để không bị quá loãng trên màn hình siêu lớn
+  margin: 40px auto;   // Căn giữa
+  padding: 0;          // Bỏ padding ngoài vì đã có width 90%
+  font-family: 'Inter', sans-serif;
+
+  // Hiệu ứng mượt mà khi đổi kích thước màn hình
+  transition: width 0.3s ease;
+
+  .header {
+    margin-bottom: 30px;
+    padding-left: 10px; // Căn lề nhẹ cho tiêu đề
+    h1 {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #1e293b;
+      margin-bottom: 8px;
+      font-size: 2rem; // Làm tiêu đề to hơn tí cho hợp với khung rộng
+    }
+    p { color: #64748b; font-size: 1.1rem; }
+  }
+}
+
+.bill-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px; // Khoảng cách giữa các card
+}
+
+.bill-card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  padding: 30px; // Tăng padding bên trong cho thoáng
+  border: 1px solid #f1f5f9;
+  transition: all 0.2s ease-in-out;
+
+  &:hover { 
+    transform: translateY(-4px); 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  }
+}
+
+.bill-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; // Căn giữa theo chiều dọc
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+
+  .club-name { 
+    font-size: 24px; // To hơn cho chuyên nghiệp
+    font-weight: 700; 
+    color: #0f172a; 
+    margin-bottom: 6px; 
+  }
+  .club-address { 
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+    color: #64748b; 
+    font-size: 15px; 
+  }
+  .bill-status { 
+    background: #dcfce7; 
+    color: #15803d; 
+    padding: 8px 16px; 
+    border-radius: 99px; 
+    font-size: 13px; 
+    font-weight: 600;
+    box-shadow: inset 0 0 0 1px rgba(21, 128, 61, 0.1);
+  }
+}
+
+.slots-section {
+  .slot-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px dashed #e2e8f0;
+    &:last-child { border-bottom: none; }
+
+    .pitch-name { 
+        font-size: 17px; 
+        font-weight: 600; 
+        color: #334155; 
+        margin-bottom: 4px; 
+    }
+    .slot-time { 
+        display: flex; 
+        align-items: center; 
+        gap: 8px; 
+        color: #64748b; 
+        font-size: 14px; 
+    }
+    .slot-price { 
+        font-size: 18px; 
+        font-weight: 700; 
+        color: #1e293b; 
+    }
+  }
+}
+
+.bill-footer {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 2px solid #f1f5f9;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end; // Căn đáy
+
+  .order-date { 
+    font-size: 14px; 
+    color: #94a3b8; 
+    background: #f8fafc;
+    padding: 6px 12px;
+    border-radius: 8px;
+  }
+  .total-amount {
+    text-align: right;
+    span:first-child { 
+        font-size: 14px; 
+        color: #64748b; 
+        font-weight: 500;
+        margin-bottom: 4px;
+    }
+    .price { 
+        font-size: 26px; // Tổng tiền làm nổi bật hẳn lên
+        font-weight: 800; 
+        color: #0984e3; 
+    }
+  }
+}
+
+// Tablet & Mobile
+@media (max-width: 768px) {
+  .history-container {
+    width: 95%; // Trên điện thoại thì chiếm 95% cho rộng hẳn
+  }
+  .bill-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    .bill-status { align-self: flex-start; }
+  }
+}

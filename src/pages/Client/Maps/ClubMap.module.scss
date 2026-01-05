@@ -1,0 +1,99 @@
+.mapContainer {
+  width: 100%;
+  height: calc(100vh - 70px); // Căn chỉnh theo chiều cao header của ông
+  position: relative;
+  z-index: 1;
+
+  :global(.leaflet-container) {
+    height: 100%;
+    width: 100%;
+  }
+}
+
+// Style cho cái nhãn thông tin hiện sẵn
+.clubLabel {
+  background-color: white !important;
+  border: 1px solid #e67e22 !important; // Màu viền cam
+  border-radius: 4px !important;
+  padding: 4px 8px !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  opacity: 0.95 !important;
+
+  &::before {
+    border-bottom-color: #e67e22 !important; // Mũi tên trỏ lên Marker
+  }
+}
+
+.labelContent {
+  display: flex;
+  flex-direction: column;
+  pointer-events: none; // Tránh việc đè lên tương tác của Marker
+
+  .labelName {
+    font-weight: bold;
+    color: #2c3e50;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .labelAddr {
+    font-size: 10px;
+    color: #7f8c8d;
+    white-space: nowrap;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+// Style cho Popup khi Click vào
+.customPopup {
+  :global(.leaflet-popup-content-wrapper) {
+    padding: 0;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  :global(.leaflet-popup-content) {
+    margin: 0;
+    width: 220px !important;
+  }
+}
+
+.popupContent {
+  img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+  }
+
+  .info {
+    padding: 12px;
+
+    h4 {
+      margin: 0 0 6px;
+      font-size: 16px;
+    }
+
+    .distance {
+      color: #27ae60;
+      font-weight: bold;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    .btnDetail {
+      width: 100%;
+      padding: 8px;
+      background-color: #e67e22;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      
+      &:hover {
+        background-color: #d35400;
+      }
+    }
+  }
+}
