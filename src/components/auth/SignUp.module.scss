@@ -1,3 +1,4 @@
+@use "sass:color";
 $primary: #00b894;
 $bg-light: #f8fafc;
 $white: #ffffff;
@@ -69,7 +70,7 @@ $radius: 16px;
   border: none; border-radius: 10px; font-weight: 700; font-size: 1rem;
   cursor: pointer; transition: 0.3s; margin-top: 10px;
   display: flex; justify-content: center;
-  &:hover { background-color: darken($primary, 5%); transform: translateY(-1px); }
+  &:hover { background-color: color.adjust($primary, $lightness: -5%);transform: translateY(-1px); }
   &:disabled { background-color: #b2bec3; cursor: not-allowed; }
 }
 

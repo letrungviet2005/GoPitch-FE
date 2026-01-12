@@ -1,18 +1,27 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import classNames from "classnames/bind";
-import styles from "./DetailPitch.module.scss";
-import { useNavigate } from "react-router-dom";
-
-const cx = classNames.bind(styles);
+import {
+  MapPin,
+  Star,
+  Share2,
+  Heart,
+  Clock,
+  Phone,
+  ChevronRight,
+  X,
+  LayoutGrid,
+  CheckCircle2,
+} from "lucide-react";
 
 const DetailPitch = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+
   const [club, setClub] = useState<any>(null);
   const [extraServices, setExtraServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  const [showAllPhotos, setShowAllPhotos] = useState(false);
 
   const formatTime = (timeString: string) => {
     if (!timeString) return "";
@@ -29,20 +38,15 @@ const DetailPitch = () => {
           sessionStorage.getItem("accessToken");
         const headers = { Authorization: `Bearer ${token}` };
 
-        const results = await Promise.allSettled([
+        const [clubRes, serviceRes] = await Promise.all([
           axios.get(`http://localhost:8080/api/v1/clubs/${id}`, { headers }),
           axios.get(`http://localhost:8080/api/v1/extra-services/club/${id}`, {
             headers,
           }),
         ]);
 
-        if (results[0].status === "fulfilled") {
-          const clubData = results[0].value.data;
-          setClub(clubData.result || clubData);
-        }
-        if (results[1].status === "fulfilled") {
-          setExtraServices(results[1].value.data || []);
-        }
+        setClub(clubRes.data.result || clubRes.data);
+        setExtraServices(serviceRes.data || []);
       } catch (error) {
         console.error("Lỗi hệ thống:", error);
       } finally {
@@ -52,227 +56,296 @@ const DetailPitch = () => {
     if (id) fetchAllData();
   }, [id]);
 
+  // Khóa cuộn trang khi mở modal ảnh
+  useEffect(() => {
+    document.body.style.overflow = showAllPhotos ? "hidden" : "unset";
+  }, [showAllPhotos]);
+
   if (loading)
     return (
-      <div className={cx("loaderWrapper")}>
-        <div className={cx("loader")}></div>
-        <p>Đang tải thông tin sân...</p>
+      <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
+        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-slate-500 font-medium italic">
+          Đang tải thông tin sân...
+        </p>
       </div>
     );
 
   if (!club)
-    return <div className={cx("error")}>Không tìm thấy thông tin sân!</div>;
+    return (
+      <div className="text-center py-20 text-red-500 font-bold">
+        Không tìm thấy thông tin sân!
+      </div>
+    );
 
-  // Xử lý ảnh: Ưu tiên Avatar đầu tiên, sau đó là các ảnh trong list imageClubs
   const allImages = [
     club.imageAvatar,
     ...(club.imageClubs?.map((img: any) => img.imageUrl) || []),
   ].filter(Boolean);
 
   return (
-    <div className={cx("container")}>
-      {/* --- HEADER --- */}
-      <header className={cx("header")}>
-        <div className={cx("headerInfo")}>
-          <h1>{club.name}</h1>
-          <div className={cx("subHeader")}>
-            <span className={cx("rating")}>
-              ⭐ {club.rating || "5.0"} (100+ đánh giá)
-            </span>
-            <span className={cx("address")}>📍 {club.address}</span>
+    <div className="bg-slate-50 min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        {/* --- HEADER --- */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
+          <div>
+            <h1 className="text-3xl font-black text-slate-900 uppercase italic mb-2">
+              {club.name}
+            </h1>
+            <div className="flex flex-wrap items-center gap-4 text-sm font-semibold">
+              <span className="flex items-center gap-1 text-amber-500">
+                <Star size={16} fill="currentColor" /> {club.rating || "5.0"}{" "}
+                (100+ đánh giá)
+              </span>
+              <span className="flex items-center gap-1 text-slate-500 underline decoration-slate-300">
+                <MapPin size={16} /> {club.address}
+              </span>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button className="flex items-center gap-2 px-4 py-2 hover:bg-slate-200 rounded-lg font-bold text-sm transition-all">
+              <Share2 size={18} /> Chia sẻ
+            </button>
+            <button className="flex items-center gap-2 px-4 py-2 hover:bg-red-50 text-red-600 rounded-lg font-bold text-sm transition-all">
+              <Heart size={18} /> Lưu
+            </button>
           </div>
         </div>
-        <div className={cx("headerActions")}>
-          <button className={cx("btnOutline")}>📤 Chia sẻ</button>
-          <button className={cx("btnOutline")}>❤️ Lưu lại</button>
-        </div>
-      </header>
 
-      {/* --- GALLERY GRID --- */}
-      <section
-        className={cx(
-          "gallerySection",
-          `grid-${Math.min(allImages.length, 5)}`
-        )}
-      >
-        {allImages.slice(0, 5).map((url, idx) => (
-          <div key={idx} className={cx("imageItem", `img-${idx}`)}>
-            <img src={url} alt={`Pitch ${idx}`} />
-            {idx === 4 && allImages.length > 5 && (
-              <div className={cx("overlay")}>+{allImages.length - 5} ảnh</div>
-            )}
+        {/* --- GALLERY GRID (Airbnb Style) --- */}
+        <section className="relative h-[300px] md:h-[450px] grid grid-cols-4 grid-rows-2 gap-3 rounded-[2rem] overflow-hidden mb-10 shadow-xl group">
+          {/* Ảnh chính lớn */}
+          <div className="col-span-4 md:col-span-2 row-span-2 relative overflow-hidden">
+            <img
+              src={allImages[0]}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              alt="Main"
+            />
           </div>
-        ))}
-      </section>
+          {/* 4 ảnh nhỏ bên phải (ẩn trên mobile để tối ưu) */}
+          {allImages.slice(1, 5).map((url, idx) => (
+            <div key={idx} className="hidden md:block relative overflow-hidden">
+              <img
+                src={url}
+                className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                alt="Sub"
+              />
+            </div>
+          ))}
+          {/* Nút Xem tất cả ảnh */}
+          <button
+            onClick={() => setShowAllPhotos(true)}
+            className="absolute bottom-6 right-6 bg-white/90 backdrop-blur px-5 py-2.5 rounded-xl text-sm font-black shadow-lg flex items-center gap-2 hover:bg-white transition-all active:scale-95"
+          >
+            <LayoutGrid size={18} /> XEM TẤT CẢ {allImages.length} ẢNH
+          </button>
+        </section>
 
-      <div className={cx("mainContent")}>
-        {/* --- CỘT TRÁI --- */}
-        <div className={cx("leftCol")}>
-          <div className={cx("card")}>
-            <h2>Giới thiệu sân</h2>
-            <p className={cx("description")}>
-              Chào mừng bạn đến với <strong>{club.name}</strong>. Sân được đầu
-              tư cơ sở vật chất hiện đại, mặt sàn chống trơn trượt, hệ thống
-              chiếu sáng đạt chuẩn thi đấu. Môi trường thể thao văn minh, sạch
-              sẽ và đầy đủ tiện nghi.
-            </p>
-            <div className={cx("quickInfo")}>
-              <div className={cx("infoItem")}>
-                <span className={cx("icon")}>🕒</span>
-                <div>
-                  <p className={cx("label")}>Giờ hoạt động</p>
-                  <p className={cx("val")}>
-                    {formatTime(club.timeStart)} - {formatTime(club.timeEnd)}
-                  </p>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          {/* --- CỘT TRÁI (THÔNG TIN CHÍNH) --- */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* Giới thiệu */}
+            <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
+              <h2 className="text-xl font-black text-slate-800 mb-4 uppercase italic">
+                Giới thiệu sân
+              </h2>
+              <p className="text-slate-600 leading-relaxed mb-8">
+                Chào mừng bạn đến với{" "}
+                <strong className="text-blue-600">{club.name}</strong>. Sân được
+                đầu tư cơ sở vật chất hiện đại, mặt sàn đạt chuẩn quốc tế, hệ
+                thống chiếu sáng LED chống lóa đạt chuẩn thi đấu.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="flex items-center gap-4 p-4 bg-blue-50/50 rounded-2xl">
+                  <div className="w-12 h-12 bg-blue-500 text-white rounded-xl flex items-center justify-center shadow-lg shadow-blue-200">
+                    <Clock />
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase font-black text-slate-400">
+                      Giờ hoạt động
+                    </p>
+                    <p className="font-bold text-blue-900">
+                      {formatTime(club.timeStart)} - {formatTime(club.timeEnd)}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className={cx("infoItem")}>
-                <span className={cx("icon")}>📞</span>
-                <div>
-                  <p className={cx("label")}>Liên hệ</p>
-                  <p className={cx("val")}>{club.phoneNumber}</p>
+                <div className="flex items-center gap-4 p-4 bg-emerald-50/50 rounded-2xl">
+                  <div className="w-12 h-12 bg-emerald-500 text-white rounded-xl flex items-center justify-center shadow-lg shadow-emerald-200">
+                    <Phone />
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase font-black text-slate-400">
+                      Liên hệ đặt sân
+                    </p>
+                    <p className="font-bold text-emerald-900">
+                      {club.phoneNumber}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* BẢNG GIÁ SÂN */}
-          <div className={cx("card")}>
-            <h2>Bảng giá thuê sân</h2>
-            <div className={cx("tableWrapper")}>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Loại sân</th>
-                    <th>Khung giờ</th>
-                    <th>Đơn giá / Giờ</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {club.pitchPrices?.map((price: any, idx: number) => (
-                    <tr key={idx}>
-                      <td>
-                        <strong>{price.name}</strong>
-                      </td>
-                      <td>
-                        {formatTime(price.timeStart)} -{" "}
-                        {formatTime(price.timeEnd)}
-                      </td>
-                      <td className={cx("priceHighlight")}>
-                        {price.price?.toLocaleString()}đ
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* BẢNG DỊCH VỤ ĐI KÈM */}
-          <div className={cx("card")}>
-            <h2>Dịch vụ & Tiện ích</h2>
-            <div className={cx("tableWrapper")}>
-              {extraServices.length > 0 ? (
-                <table className={cx("serviceTable")}>
-                  <thead>
+            {/* Bảng giá */}
+            <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
+              <div className="p-8 border-b border-slate-50 flex justify-between items-center">
+                <h2 className="text-xl font-black text-slate-800 uppercase italic">
+                  Bảng giá thuê sân
+                </h2>
+                <span className="text-xs bg-slate-100 px-3 py-1 rounded-full font-bold text-slate-500">
+                  Giá theo giờ
+                </span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead className="bg-slate-50 text-[10px] uppercase font-black text-slate-400">
                     <tr>
-                      <th>Dịch vụ</th>
-                      <th>Đơn vị</th>
-                      <th>Đơn giá</th>
+                      <th className="px-8 py-4">Tên khung giờ</th>
+                      <th className="px-8 py-4 text-center">Thời gian</th>
+                      <th className="px-8 py-4 text-right">Đơn giá</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {extraServices.map((service, idx) => (
-                      <tr key={idx}>
-                        <td className={cx("serviceName")}>🔹 {service.name}</td>
-                        <td>{service.unit}</td>
-                        <td className={cx("priceHighlight")}>
-                          {service.price?.toLocaleString()}đ
+                  <tbody className="divide-y divide-slate-50">
+                    {club.pitchPrices?.map((price: any, idx: number) => (
+                      <tr
+                        key={idx}
+                        className="hover:bg-slate-50/50 transition-colors"
+                      >
+                        <td className="px-8 py-5 font-bold text-slate-700">
+                          {price.name}
+                        </td>
+                        <td className="px-8 py-5 text-center font-semibold text-slate-500">
+                          {formatTime(price.timeStart)} -{" "}
+                          {formatTime(price.timeEnd)}
+                        </td>
+                        <td className="px-8 py-5 text-right font-black text-blue-600 text-lg">
+                          {price.price?.toLocaleString()}đ
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-              ) : (
-                <p className={cx("emptyText")}>
-                  Sân hiện chưa cập nhật các dịch vụ bổ sung.
-                </p>
-              )}
+              </div>
+            </div>
+
+            {/* Dịch vụ phụ */}
+            <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
+              <h2 className="text-xl font-black text-slate-800 mb-6 uppercase italic">
+                Dịch vụ & Tiện ích
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {extraServices.length > 0 ? (
+                  extraServices.map((s, i) => (
+                    <div
+                      key={i}
+                      className="flex justify-between items-center p-4 border border-slate-100 rounded-2xl hover:border-blue-200 transition-all"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                        <span className="font-bold text-slate-700">
+                          {s.name}
+                        </span>
+                      </div>
+                      <span className="text-sm font-black text-emerald-600 bg-emerald-50 px-3 py-1 rounded-lg">
+                        {s.price?.toLocaleString()}đ/{s.unit}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="col-span-2 text-center text-slate-400 py-4 italic">
+                    Chưa có dịch vụ bổ sung
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 
-          <div className={cx("card")}>
-            <h2>Đánh giá</h2>
-            <div className={cx("commentList")}>
-              {club.comments?.length > 0 ? (
-                club.comments.map((comment: any, idx: number) => (
-                  <div key={idx} className={cx("commentItem")}>
-                    <img
-                      src={`https://i.pravatar.cc/150?u=${idx}`}
-                      alt="user"
-                    />
-                    <div className={cx("commentBody")}>
-                      <div className={cx("commentHeader")}>
-                        <strong>
-                          {comment.user?.name || "Hội viên GoPitch"}
-                        </strong>
-                        <span>⭐ {comment.rate}/5</span>
-                      </div>
-                      <p>{comment.content}</p>
-                    </div>
+          {/* --- CỘT PHẢI (SIDEBAR STICKY) --- */}
+          <aside className="lg:col-span-1">
+            <div className="sticky top-24 space-y-6">
+              <div className="bg-white p-8 rounded-[2.5rem] shadow-2xl shadow-blue-900/10 border border-blue-50 overflow-hidden relative">
+                {/* Trang trí góc */}
+                <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-bl-full -mr-8 -mt-8"></div>
+
+                <div className="mb-6">
+                  <p className="text-xs font-black text-slate-400 uppercase tracking-widest">
+                    Giá chỉ từ
+                  </p>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-black text-blue-600">
+                      {club.pitchPrices?.[0]?.price?.toLocaleString() || "0"}đ
+                    </span>
+                    <span className="text-slate-400 font-bold text-sm">
+                      / giờ
+                    </span>
                   </div>
-                ))
-              ) : (
-                <p className={cx("emptyText")}>Chưa có bình luận nào.</p>
-              )}
+                </div>
+
+                <button
+                  onClick={() => navigate(`/bookingpitch/${id}`)}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-5 rounded-2xl shadow-xl shadow-blue-600/20 transition-all active:scale-[0.98] mb-6 flex items-center justify-center gap-2 uppercase italic tracking-wider"
+                >
+                  Đặt sân ngay <ChevronRight size={20} />
+                </button>
+
+                <ul className="space-y-4 mb-8">
+                  <li className="flex items-center gap-3 text-sm font-bold text-slate-600">
+                    <CheckCircle2 className="text-emerald-500" size={18} /> Hoàn
+                    tiền nếu hủy trước 24h
+                  </li>
+                  <li className="flex items-center gap-3 text-sm font-bold text-slate-600">
+                    <CheckCircle2 className="text-emerald-500" size={18} /> Hỗ
+                    trợ thanh toán VNPay/MoMo
+                  </li>
+                </ul>
+
+                <div className="rounded-2xl overflow-hidden h-[200px] border border-slate-100">
+                  <iframe
+                    title="map"
+                    src={`https://maps.google.com/maps?q=${encodeURIComponent(
+                      club.address
+                    )}&output=embed`}
+                    className="w-full h-full grayscale hover:grayscale-0 transition-all duration-700"
+                  ></iframe>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      {/* --- MODAL XEM TẤT CẢ ẢNH --- */}
+      {showAllPhotos && (
+        <div className="fixed inset-0 z-[999] bg-white overflow-y-auto animate-in slide-in-from-bottom duration-300">
+          <div className="sticky top-0 bg-white/80 backdrop-blur-md px-6 py-4 flex justify-between items-center border-b z-10">
+            <button
+              onClick={() => setShowAllPhotos(false)}
+              className="p-2 hover:bg-slate-100 rounded-full transition-all"
+            >
+              <X size={24} />
+            </button>
+            <h3 className="font-black text-slate-800 uppercase italic">
+              Thư viện ảnh ({allImages.length})
+            </h3>
+            <div className="w-10"></div> {/* Spacer */}
+          </div>
+          <div className="max-w-4xl mx-auto p-6 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {allImages.map((url, idx) => (
+                <div
+                  key={idx}
+                  className="w-full rounded-2xl overflow-hidden shadow-lg border border-slate-100"
+                >
+                  <img
+                    src={url}
+                    className="w-full h-full object-cover"
+                    alt={`Full ${idx}`}
+                  />
+                </div>
+              ))}
             </div>
           </div>
         </div>
-
-        {/* --- CỘT PHẢI (STICKY) --- */}
-        <aside className={cx("rightCol")}>
-          <div className={cx("bookingSticky")}>
-            <div className={cx("bookingCard")}>
-              <div className={cx("pricePreview")}>
-                <span>Giá thuê chỉ từ</span>
-                <h3>
-                  {club.pitchPrices?.[0]?.price?.toLocaleString() || "0"}đ{" "}
-                  <span>/ giờ</span>
-                </h3>
-              </div>
-
-              <button
-                className={cx("primaryBtn")}
-                onClick={() => navigate(`/bookingpitch/${id}`)}
-              >
-                ĐẶT SÂN NGAY
-              </button>
-
-              <div className={cx("features")}>
-                <div className={cx("featureItem")}>
-                  ✔️ Hoàn tiền nếu hủy trước 24h
-                </div>
-                <div className={cx("featureItem")}>✔️ Thanh toán linh hoạt</div>
-              </div>
-
-              <hr />
-
-              <div className={cx("miniMap")}>
-                <h4>Vị trí sân</h4>
-                <iframe
-                  title="map"
-                  src={`https://maps.google.com/maps?q=${encodeURIComponent(
-                    club.address
-                  )}&output=embed`}
-                  width="100%"
-                  height="180"
-                  style={{ border: 0, borderRadius: "12px" }}
-                ></iframe>
-              </div>
-            </div>
-          </div>
-        </aside>
-      </div>
+      )}
     </div>
   );
 };

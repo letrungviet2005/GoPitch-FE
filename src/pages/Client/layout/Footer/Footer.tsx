@@ -88,7 +88,7 @@ const Footer = () => {
             <ul className={cx("contactList")}>
               <li>
                 <MapPin size={18} />
-                <span>Số 123, Đường Cầu Giấy, Hà Nội</span>
+                <span>103 Lê Kim Lăng</span>
               </li>
               <li>
                 <Phone size={18} />

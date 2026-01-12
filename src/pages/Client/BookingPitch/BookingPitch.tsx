@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import classNames from "classnames/bind";
 import axios from "axios";
@@ -6,82 +6,134 @@ import styles from "./BookingPitch.module.scss";
 
 const cx = classNames.bind(styles);
 
+const getTodayLocal = () => {
+  const today = new Date();
+  const offset = today.getTimezoneOffset() * 60000;
+  return new Date(today.getTime() - offset).toISOString().split("T")[0];
+};
+
 const BookingPitch = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [pitches, setPitches] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [clubInfo, setClubInfo] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split("T")[0]
-  );
+  const [loading, setLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState(getTodayLocal());
   const [selectedSlots, setSelectedSlots] = useState([]);
 
-  const timeLabels = useMemo(() => {
-    const labels = [];
-    for (let h = 5; h <= 22; h++) {
-      labels.push(`${h.toString().padStart(2, "0")}:00`);
+  // --- 1. TẠO DANH SÁCH 7 NGÀY ĐỂ CHỌN NHANH ---
+  const dateOptions = useMemo(() => {
+    const options = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() + i);
+      const isoDate = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+        .toISOString()
+        .split("T")[0];
+
+      options.push({
+        fullDate: isoDate,
+        dayName:
+          i === 0
+            ? "Hôm nay"
+            : d.toLocaleDateString("vi-VN", { weekday: "short" }),
+        dateNum: d.getDate(),
+      });
     }
-    return labels;
+    return options;
   }, []);
 
-  const getPriceForTime = (timeLabel) => {
+  const timeLabels = useMemo(() => {
+    const arr = [];
+    for (let h = 5; h <= 22; h++) {
+      arr.push(`${h.toString().padStart(2, "0")}:00`);
+    }
+    return arr;
+  }, []);
+
+  // --- 2. LOGIC KIỂM TRA GIỜ ĐÃ QUA ---
+  const isPastSlot = (date, time) => {
+    const today = getTodayLocal();
+    if (date < today) return true;
+    if (date > today) return false;
+
+    const now = new Date();
+    const [slotHour] = time.split(":").map(Number);
+    // Khóa các giờ nhỏ hơn hoặc bằng giờ hiện tại
+    return slotHour <= now.getHours();
+  };
+
+  const getPriceForTime = (pitchId, time) => {
     if (!clubInfo?.pitchPrices) return 0;
     const match = clubInfo.pitchPrices.find((p) => {
+      const isSamePitch = String(p.pitchId) === String(pitchId);
       const start = p.timeStart.substring(0, 5);
       const end = p.timeEnd.substring(0, 5);
-      return timeLabel >= start && timeLabel < end;
+      return isSamePitch && time >= start && time < end;
     });
     return match ? match.price : 0;
   };
 
-  const fetchBookingData = async () => {
+  const fetchBookingData = useCallback(async () => {
+    if (!selectedDate || !id) return;
     try {
       setLoading(true);
       const token =
         localStorage.getItem("accessToken") ||
         sessionStorage.getItem("accessToken");
+      const headers = { Authorization: `Bearer ${token}` };
+
       const clubRes = await axios.get(
         `http://localhost:8080/api/v1/clubs/${id}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers }
       );
-      const result = clubRes.data.result || clubRes.data;
-      setClubInfo(result);
+      const club = clubRes.data.result || clubRes.data;
+      setClubInfo(club);
 
-      const pitchesWithCals = await Promise.all(
-        (result.pitches || []).map(async (p) => {
-          const calRes = await axios.get(
-            `http://localhost:8080/api/v1/calendars?pitchId=${p.id}&date=${selectedDate}`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-          return { ...p, calendars: calRes.data || [] };
+      const pitchData = await Promise.all(
+        (club.pitches || []).map(async (p) => {
+          try {
+            const calRes = await axios.get(
+              `http://localhost:8080/api/v1/calendars`,
+              {
+                headers,
+                params: { pitchId: p.id, date: selectedDate },
+              }
+            );
+            return { ...p, calendars: calRes.data || [] };
+          } catch (e) {
+            return { ...p, calendars: [] };
+          }
         })
       );
-      setPitches(pitchesWithCals);
-    } catch (e) {
-      console.error(e);
+      setPitches(pitchData);
+    } catch (err) {
+      console.error("Lỗi API:", err);
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    if (id) fetchBookingData();
   }, [id, selectedDate]);
 
+  useEffect(() => {
+    fetchBookingData();
+  }, [fetchBookingData]);
+
   const handleCellClick = (pitch, time) => {
+    if (isPastSlot(selectedDate, time)) return;
+
+    const price = getPriceForTime(pitch.id, time);
+    if (price <= 0) return;
+
     const isBooked = pitch.calendars.some(
-      (c) => c.startTime.split("T")[1].substring(0, 5) === time
+      (c) => c.startTime?.split("T")[1]?.substring(0, 5) === time
     );
     if (isBooked) return;
 
     const slotKey = `${pitch.id}-${time}`;
-    const isSelected = selectedSlots.some((s) => s.slotKey === slotKey);
+    const exists = selectedSlots.some((s) => s.slotKey === slotKey);
 
-    if (isSelected) {
+    if (exists) {
       setSelectedSlots(selectedSlots.filter((s) => s.slotKey !== slotKey));
     } else {
       setSelectedSlots([
@@ -92,16 +144,17 @@ const BookingPitch = () => {
           pitchName: pitch.name,
           time,
           date: selectedDate,
-          price: getPriceForTime(time),
+          price,
         },
       ]);
     }
   };
 
+  // --- FIX LỖI: TÍNH TỔNG TIỀN ---
   const totalAmount = selectedSlots.reduce((sum, s) => sum + s.price, 0);
 
-  if (loading)
-    return <div className={cx("loading")}>Đang tải dữ liệu sân...</div>;
+  if (loading && !clubInfo)
+    return <div className={cx("loading")}>Đang tải...</div>;
 
   return (
     <div className={cx("booking-container")}>
@@ -115,27 +168,24 @@ const BookingPitch = () => {
         </button>
       </header>
 
-      <div className={cx("controls-bar")}>
-        <div className={cx("date-picker-wrapper")}>
-          <label>Chọn ngày đặt:</label>
-          <input
-            type="date"
-            value={selectedDate}
-            min={new Date().toISOString().split("T")[0]}
-            onChange={(e) => setSelectedDate(e.target.value)}
-          />
-        </div>
-
-        <div className={cx("legend")}>
-          <div className={cx("legend-item", "available")}>
-            <div className={cx("box")}></div> Trống
-          </div>
-          <div className={cx("legend-item", "booked")}>
-            <div className={cx("box")}></div> Đã đặt
-          </div>
-          <div className={cx("legend-item", "selected")}>
-            <div className={cx("box")}></div> Đang chọn
-          </div>
+      {/* BỘ CHỌN NGÀY DẠNG TAB */}
+      <div className={cx("date-selector-container")}>
+        <div className={cx("date-tabs")}>
+          {dateOptions.map((opt) => (
+            <div
+              key={opt.fullDate}
+              className={cx("date-tab", {
+                active: selectedDate === opt.fullDate,
+              })}
+              onClick={() => {
+                setSelectedDate(opt.fullDate);
+                setSelectedSlots([]);
+              }}
+            >
+              <span className={cx("day-name")}>{opt.dayName}</span>
+              <span className={cx("date-num")}>{opt.dateNum}</span>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -155,12 +205,14 @@ const BookingPitch = () => {
                 <td className={cx("sticky-col")}>{p.name}</td>
                 {timeLabels.map((t) => {
                   const isBooked = p.calendars.some(
-                    (c) => c.startTime.split("T")[1].substring(0, 5) === t
+                    (c) => c.startTime?.split("T")[1]?.substring(0, 5) === t
                   );
                   const isSelected = selectedSlots.some(
                     (s) => s.slotKey === `${p.id}-${t}`
                   );
-                  const price = getPriceForTime(t);
+                  const price = getPriceForTime(p.id, t);
+                  const isPast = isPastSlot(selectedDate, t);
+                  const hasNoPrice = price <= 0;
 
                   return (
                     <td
@@ -168,20 +220,31 @@ const BookingPitch = () => {
                       className={cx("cell", {
                         booked: isBooked,
                         selected: isSelected,
+                        past: isPast,
+                        "no-price": (hasNoPrice || isPast) && !isBooked,
                       })}
-                      onClick={() => handleCellClick(p, t)}
+                      onClick={() =>
+                        !isBooked &&
+                        !isPast &&
+                        !hasNoPrice &&
+                        handleCellClick(p, t)
+                      }
                     >
                       {isBooked ? (
-                        "✕"
+                        <span className={cx("icon")}>✕</span>
+                      ) : isPast ? (
+                        <span className={cx("disabled-text")}>--</span>
+                      ) : hasNoPrice ? (
+                        <span className={cx("disabled-text")}>--</span>
                       ) : (
-                        <>
+                        <div className={cx("slot-content")}>
                           {isSelected && (
-                            <div style={{ fontSize: "18px" }}>✓</div>
+                            <div className={cx("check-mark")}>✓</div>
                           )}
                           <span className={cx("price-tag")}>
-                            {price > 0 ? `${price / 1000}k` : "--"}
+                            {price / 1000}k
                           </span>
-                        </>
+                        </div>
                       )}
                     </td>
                   );
@@ -195,7 +258,9 @@ const BookingPitch = () => {
       <footer className={cx("footer")}>
         <div className={cx("price-info")}>
           <h4>TỔNG THANH TOÁN ({selectedSlots.length} ô)</h4>
-          <p>{totalAmount.toLocaleString()} VNĐ</p>
+          <p className={cx("total-price")}>
+            {totalAmount.toLocaleString()} VNĐ
+          </p>
         </div>
         <button
           className={cx("next-btn")}

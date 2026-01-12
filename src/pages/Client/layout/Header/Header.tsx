@@ -1,70 +1,103 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import classNames from "classnames/bind";
-import { User, Map, LayoutGrid, PhoneCall, Home } from "lucide-react";
-import style from "./Header.module.scss";
-
-const cx = classNames.bind(style);
+import {
+  User,
+  Map,
+  LayoutGrid,
+  PhoneCall,
+  Home,
+  ChevronDown,
+  LogOut,
+} from "lucide-react";
 
 const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [scrolled, setScrolled] = useState(false);
 
-  // Hàm kiểm tra trang hiện tại để active menu
-  const isActive = (path: string) => location.pathname === path;
+  // Hiệu ứng đổi màu khi cuộn trang
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const isActive = (path) => location.pathname === path;
+
+  // Render Nav Item
+  const NavItem = ({ path, icon: Icon, label }) => (
+    <button
+      onClick={() => navigate(path)}
+      className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all duration-200 ${
+        isActive(path)
+          ? "bg-emerald-500 text-white shadow-md shadow-emerald-200"
+          : "text-slate-600 hover:bg-slate-100 hover:text-emerald-600"
+      }`}
+    >
+      <Icon size={18} />
+      <span className="hidden lg:block">{label}</span>
+    </button>
+  );
 
   return (
-    <header className={cx("header")}>
-      {" "}
-      {/* Bỏ class { scrolled: isScrolled } */}
-      <div className={cx("container")}>
-        {/* LOGO */}
-        <div className={cx("logo")} onClick={() => navigate("/")}>
-          <span className={cx("logoText")}>GO</span>
-          <span className={cx("logoHighlight")}>PITCH</span>
-        </div>
-
-        {/* NAVIGATION */}
-        <nav className={cx("navigation")}>
-          <button
-            className={cx("navItem", { active: isActive("/") })}
+    <header
+      className={`sticky top-0 z-50 w-full transition-all duration-300 ${
+        scrolled
+          ? "bg-white/80 backdrop-blur-md shadow-sm py-3"
+          : "bg-white py-5"
+      }`}
+    >
+      <div className="container mx-auto px-4 md:px-6">
+        <div className="flex items-center justify-between">
+          {/* LOGO */}
+          <div
+            className="flex items-center gap-1 cursor-pointer group"
             onClick={() => navigate("/")}
           >
-            <Home size={18} /> Home
-          </button>
-          <button
-            className={cx("navItem", { active: isActive("/maps") })}
-            onClick={() => navigate("/maps")}
-          >
-            <Map size={18} /> Maps
-          </button>
-          <button
-            className={cx("navItem", { active: isActive("/services") })}
-            onClick={() => navigate("/pitch")}
-          >
-            <LayoutGrid size={18} /> Services
-          </button>
-          <button
-            className={cx("navItem", { active: isActive("/contact") })}
-            onClick={() => navigate("/contact")}
-          >
-            <PhoneCall size={18} /> Contact
-          </button>
-        </nav>
+            <div className="bg-emerald-500 p-2 rounded-lg group-hover:rotate-12 transition-transform">
+              <span className="text-white font-black text-xl leading-none">
+                GO
+              </span>
+            </div>
+            <span className="text-slate-800 font-black text-2xl tracking-tighter">
+              PITCH
+            </span>
+          </div>
 
-        {/* PROFILE & ACTIONS */}
-        <div className={cx("actions")}>
-          <div
-            className={cx("userProfile")}
-            onClick={() => navigate("/profile")}
-          >
-            <div className={cx("avatarWrapper")}>
-              <img
-                src="https://tse4.mm.bing.net/th/id/OIP.LkrCBJoljYJlA43RIOjTdwHaHa?pid=Api&P=0&h=180"
-                alt="User Avatar"
+          {/* NAVIGATION */}
+          <nav className="hidden md:flex items-center gap-2 bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
+            <NavItem path="/" icon={Home} label="Trang chủ" />
+            <NavItem path="/maps" icon={Map} label="Bản đồ" />
+            <NavItem path="/pitch" icon={LayoutGrid} label="Đặt sân" />
+            <NavItem path="/contact" icon={PhoneCall} label="Liên hệ" />
+          </nav>
+
+          {/* ACTIONS / PROFILE */}
+          <div className="flex items-center gap-3">
+            <div
+              className="flex items-center gap-3 p-1.5 pr-4 rounded-full border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors shadow-sm"
+              onClick={() => navigate("/profile")}
+            >
+              <div className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-emerald-500/20">
+                <img
+                  src="https://tse4.mm.bing.net/th/id/OIP.LkrCBJoljYJlA43RIOjTdwHaHa?pid=Api&P=0&h=180"
+                  alt="Avatar"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="hidden sm:block">
+                <p className="text-xs text-slate-400 font-medium leading-none mb-1">
+                  Chào bạn,
+                </p>
+                <p className="text-sm font-bold text-slate-700 leading-none">
+                  Tài khoản
+                </p>
+              </div>
+              <ChevronDown
+                size={14}
+                className="text-slate-400 hidden sm:block"
               />
             </div>
-            <span className={cx("userName")}>Tài khoản</span>
           </div>
         </div>
       </div>

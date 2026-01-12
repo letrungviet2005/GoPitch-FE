@@ -1,94 +1,99 @@
 .booking-container {
-  width: 100%; // Chiếm hết chiều ngang
+  width: 100%;
   min-height: 100vh;
-  background-color: #f4f7f6;
-  padding: 0; // Bỏ padding ngoài để sát mép
+  background-color: #f8fafc;
+  padding: 0;
   font-family: 'Segoe UI', Roboto, sans-serif;
   position: relative;
   padding-bottom: 120px;
 }
 
 .header-top {
-  background: linear-gradient(135deg, #00b09b, #96c93d); // Màu xanh thể thao
+  background: linear-gradient(135deg, #00b09b, #96c93d);
   color: white;
-  padding: 30px 20px;
+  padding: 25px 5%;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 
   .club-info {
-    h1 { margin: 0; font-size: 28px; text-transform: uppercase; letter-spacing: 1px; }
-    p { margin: 5px 0 0; opacity: 0.9; }
+    h1 { margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 1px; }
+    p { margin: 5px 0 0; opacity: 0.9; font-size: 14px; }
   }
 
   .back-btn {
     background: rgba(255, 255, 255, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.4);
     color: white;
-    padding: 8px 16px;
-    border-radius: 20px;
+    padding: 8px 20px;
+    border-radius: 25px;
     cursor: pointer;
-    backdrop-filter: blur(5px);
-    &:hover { background: rgba(255, 255, 255, 0.3); }
+    transition: 0.3s;
+    &:hover { background: rgba(255, 255, 255, 0.4); }
   }
 }
 
-.controls-bar {
+// --- THIẾT KẾ MỚI: BỘ CHỌN NGÀY DẠNG TAB ---
+.date-selector-container {
   background: white;
-  padding: 15px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #eee;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
+  padding: 20px 5%;
+  border-bottom: 1px solid #e2e8f0;
 
-// THIẾT KẾ NÚT CHỌN NGÀY LINH HOẠT
-.date-picker-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: #f0f2f5;
-  padding: 8px 15px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
-  transition: all 0.3s;
-  
-  &:hover { border-color: #00b09b; background: #fff; }
+  .date-tabs {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    scrollbar-width: none; // Ẩn scrollbar Firefox
+    &::-webkit-scrollbar { display: none; } // Ẩn scrollbar Chrome
 
-  label { font-weight: 600; color: #444; font-size: 14px; }
-
-  input[type="date"] {
-    border: none;
-    background: transparent;
-    font-size: 16px;
-    font-weight: 700;
-    color: #00b09b;
-    cursor: pointer;
-    outline: none;
-    &::-webkit-calendar-picker-indicator {
+    .date-tab {
+      min-width: 70px;
+      padding: 12px 8px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       cursor: pointer;
-      filter: invert(48%) sepia(79%) saturate(2476%) hue-rotate(143deg) brightness(91%) contrast(101%);
+      transition: all 0.2s ease;
+      background: #f8fafc;
+
+      .day-name { font-size: 12px; color: #64748b; margin-bottom: 4px; }
+      .date-num { font-size: 18px; font-weight: 700; color: #1e293b; }
+
+      &:hover { border-color: #00b09b; background: #f0fdfa; }
+
+      &.active {
+        background: #00b09b;
+        border-color: #00b09b;
+        box-shadow: 0 4px 10px rgba(0, 176, 155, 0.3);
+        .day-name, .date-num { color: white; }
+      }
     }
   }
 }
 
 .legend {
   display: flex;
+  justify-content: center;
   gap: 20px;
+  padding: 15px;
+  background: white;
+  flex-wrap: wrap;
+
   .legend-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    font-weight: 500;
-    .box { width: 16px; height: 16px; border-radius: 4px; }
-    &.available .box { background: white; border: 1px solid #ddd; }
-    &.booked .box { background: #ff4d4d; }
+    gap: 6px;
+    font-size: 12px;
+    color: #64748b;
+    .box { width: 14px; height: 14px; border-radius: 3px; }
+    &.available .box { background: white; border: 1px solid #cbd5e1; }
+    &.booked .box { background: #fee2e2; border: 1px solid #fca5a5; }
     &.selected .box { background: #2ecc71; }
+    &.no-price .box { background: #f1f5f9; }
   }
 }
 
@@ -101,60 +106,81 @@
 .booking-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 1200px; // Đảm bảo không bị quá hẹp khi nhiều giờ
+  min-width: 1000px;
 
   th {
-    background: #f8f9fa;
-    color: #666;
+    background: #f8fafc;
+    color: #64748b;
     font-weight: 600;
     padding: 15px;
-    border-bottom: 2px solid #edf2f7;
-    font-size: 14px;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 13px;
   }
 
   .sticky-col {
     position: sticky;
     left: 0;
     background: #fff;
-    z-index: 10;
-    border-right: 2px solid #edf2f7;
+    z-index: 20;
+    border-right: 2px solid #f1f5f9;
     font-weight: 700;
-    color: #2d3748;
-    box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+    color: #1e293b;
+    padding: 0 20px;
+    box-shadow: 4px 0 8px rgba(0,0,0,0.02);
   }
 
   .cell {
-    height: 70px;
-    border: 1px solid #f1f1f1;
+    height: 65px;
+    border: 1px solid #f1f5f9;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all 0.2s;
     text-align: center;
+    position: relative;
 
-    &:hover:not(.booked) {
-      background-color: #e6fffa;
-      transform: scale(0.98);
+    &:hover:not(.booked):not(.past):not(.no-price) {
+      background-color: #f0fdf4;
     }
 
+    // Trạng thái đã đặt
     &.booked {
-      background-color: #fff5f5;
-      color: #fc8181;
+      background-color: #fff1f2;
+      color: #f43f5e;
       cursor: not-allowed;
-      font-size: 20px;
+      .icon { font-size: 14px; font-weight: bold; }
     }
 
+    // Trạng thái Đang chọn
     &.selected {
       background-color: #2ecc71 !important;
       color: white;
-      box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+      .price-tag { color: white !important; }
     }
 
-    .price-tag {
-      display: block;
-      font-size: 12px;
-      font-weight: 700;
-      color: #2ecc71;
+    // --- TRẠNG THÁI MỚI: HẾT HẠN (QUÁ GIỜ) ---
+    &.past {
+      background-color: #f1f5f9;
+      cursor: not-allowed;
+      pointer-events: none; // Không cho click
+      opacity: 0.6;
+      .disabled-text { color: #94a3b8; font-size: 11px; font-style: italic; }
     }
-    &.selected .price-tag { color: white; }
+
+    &.no-price {
+      background-color: #fafafa;
+      cursor: not-allowed;
+      .disabled-text { color: #cbd5e1; }
+    }
+
+    .slot-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+
+      .check-mark { font-size: 14px; font-weight: bold; }
+      .price-tag { font-size: 12px; font-weight: 700; color: #059669; }
+    }
   }
 }
 
@@ -163,29 +189,41 @@
   bottom: 0;
   width: 100%;
   background: white;
-  padding: 20px 40px;
+  padding: 15px 5%;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
+  box-shadow: 0 -10px 25px rgba(0,0,0,0.08);
   z-index: 1000;
 
   .price-info {
-    h4 { margin: 0; color: #718096; font-size: 14px; }
-    p { margin: 0; font-size: 24px; font-weight: 800; color: #2d3748; }
+    h4 { margin: 0; color: #64748b; font-size: 13px; text-transform: uppercase; }
+    .total-price { margin: 0; font-size: 22px; font-weight: 800; color: #0f172a; }
   }
 
   .next-btn {
     background: #00b09b;
     color: white;
     border: none;
-    padding: 15px 40px;
-    border-radius: 12px;
-    font-size: 16px;
+    padding: 14px 35px;
+    border-radius: 30px;
+    font-size: 15px;
     font-weight: 700;
     cursor: pointer;
-    transition: 0.3s;
-    &:disabled { background: #cbd5e0; cursor: not-allowed; }
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(0, 176, 155, 0.2);
+
+    &:disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; box-shadow: none; }
     &:hover:not(:disabled) { background: #008e7d; transform: translateY(-2px); }
   }
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 18px;
+  color: #00b09b;
+  font-weight: 600;
 }

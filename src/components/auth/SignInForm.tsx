@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import classNames from "classnames/bind";
-import { ChevronLeft, Eye, EyeOff, Lock, Mail } from "lucide-react"; // Dùng Lucide cho đồng bộ
+import { ChevronLeft, Eye, EyeOff, Lock, Mail } from "lucide-react";
 import styles from "./SignIn.module.scss";
 
 const cx = classNames.bind(styles);
@@ -42,20 +42,35 @@ export default function SignInForm() {
       const result = await response.json();
 
       if (response.ok && result.accessToken) {
-        localStorage.removeItem("accessToken");
-        sessionStorage.removeItem("accessToken");
+        // --- CHỈ DÙNG LOCAL STORAGE ---
 
-        if (isChecked) {
-          localStorage.setItem("accessToken", result.accessToken);
-        } else {
-          sessionStorage.setItem("accessToken", result.accessToken);
+        // 1. Xóa dữ liệu cũ cho chắc ăn
+        localStorage.clear();
+        sessionStorage.clear();
+
+        // 2. Lưu vào Local Storage
+        localStorage.setItem("accessToken", result.accessToken);
+
+        if (result.user) {
+          localStorage.setItem("userRole", result.user.role?.name || "User");
+          localStorage.setItem("userName", result.user.name || "");
+          localStorage.setItem("userId", result.user.id.toString());
         }
 
-        setSuccess("Đăng nhập thành công!");
+        setSuccess(`Chào mừng ${result.user?.name || "bạn"} trở lại!`);
+
+        // --- PHÂN QUYỀN ĐIỀU HƯỚNG ---
+        const userRole = result.user?.role?.name;
+
         setTimeout(() => {
-          navigate("/");
+          if (userRole === "Owner" || userRole === "Admin") {
+            navigate("/admin/");
+          } else {
+            navigate("/");
+          }
+          // Reload để các component khác (Header, Sidebar) nhận dữ liệu mới từ Storage
           window.location.reload();
-        }, 1000);
+        }, 800);
       } else {
         setError(result.message || "Email hoặc mật khẩu không chính xác.");
       }
@@ -69,7 +84,6 @@ export default function SignInForm() {
   return (
     <div className={cx("signInPage")}>
       <div className={cx("container")}>
-        {/* Nút quay lại */}
         <button className={cx("backBtn")} onClick={() => navigate("/")}>
           <ChevronLeft size={20} /> Quay lại trang chủ
         </button>
@@ -81,7 +95,7 @@ export default function SignInForm() {
               <span className={cx("logoHighlight")}>PITCH</span>
             </div>
             <h1>Chào mừng trở lại!</h1>
-            <p>Vui lòng đăng nhập để tiếp tục sử dụng dịch vụ.</p>
+            <p>Vui lòng đăng nhập để tiếp tục.</p>
           </div>
 
           <form onSubmit={handleSubmit} className={cx("form")}>
@@ -103,14 +117,14 @@ export default function SignInForm() {
               <div className={cx("labelRow")}>
                 <label>Mật khẩu</label>
                 <Link to="/reset-password" className={cx("forgotLink")}>
-                  Quên mật khẩu?
+                  Quên?
                 </Link>
               </div>
               <div className={cx("inputWrapper")}>
                 <Lock className={cx("icon")} size={18} />
                 <input
                   type={showPassword ? "text" : "password"}
-                  placeholder="Nhập mật khẩu của bạn"
+                  placeholder="Mật khẩu"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -123,18 +137,6 @@ export default function SignInForm() {
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
-            </div>
-
-            <div className={cx("options")}>
-              <label className={cx("checkboxContainer")}>
-                <input
-                  type="checkbox"
-                  checked={isChecked}
-                  onChange={(e) => setIsChecked(e.target.checked)}
-                />
-                <span className={cx("checkmark")}></span>
-                Duy trì đăng nhập
-              </label>
             </div>
 
             {error && <div className={cx("alert", "error")}>{error}</div>}

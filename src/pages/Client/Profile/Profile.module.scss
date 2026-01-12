@@ -1,19 +1,20 @@
 $primary: #00b894;
-$bg-body: #f8fafc;
+$secondary: #00cec9;
+$bg-body: #f1f5f9;
 $white: #ffffff;
-$text-main: #2d3436;
-$text-muted: #636e72;
-$shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.05);
+$text-main: #1e293b;
+$text-muted: #64748b;
+$shadow-soft: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
 $radius-lg: 24px;
 $radius-md: 16px;
 
 .profilePage {
   background-color: $bg-body;
   min-height: 100vh;
-  padding: 40px 20px;
-  font-family: 'Inter', sans-serif;
+  padding: 60px 20px;
+  font-family: 'Inter', system-ui, sans-serif;
 
-  .container { max-width: 1100px; margin: 0 auto; }
+  .container { max-width: 1140px; margin: 0 auto; }
 }
 
 .headerCard {
@@ -21,124 +22,174 @@ $radius-md: 16px;
   border-radius: $radius-lg;
   overflow: hidden;
   box-shadow: $shadow-soft;
-  margin-bottom: 30px;
-  border: 1px solid rgba(0, 0, 0, 0.02);
+  margin-bottom: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
 
   .coverPhoto {
-    height: 180px;
-    background: linear-gradient(135deg, $primary 0%, #00cec9 100%);
+    height: 200px;
+    background: url('https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=2000') center/cover;
     position: relative;
+    
+    .overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom right, rgba($primary, 0.8), rgba($secondary, 0.6));
+    }
+
     .badge {
-      position: absolute; top: 20px; right: 20px;
-      background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(10px);
-      color: white; padding: 6px 14px; border-radius: 50px; font-size: 0.8rem;
-      display: flex; align-items: center; gap: 6px; border: 1px solid rgba(255, 255, 255, 0.3);
+      position: absolute; top: 24px; right: 24px;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(8px);
+      color: white; padding: 8px 16px; border-radius: 100px;
+      font-size: 0.85rem; font-weight: 600;
+      display: flex; align-items: center; gap: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      z-index: 1;
     }
   }
 
   .profileInfo {
-    padding: 0 40px 30px;
-    display: flex;
-    align-items: flex-end;
-    position: relative;
-    margin-top: -40px;
+    padding: 0 48px 40px;
+    display: flex; align-items: flex-end;
+    position: relative; margin-top: -60px;
 
     @media (max-width: 992px) {
       flex-direction: column; align-items: center; text-align: center;
-      margin-top: -60px; padding: 0 20px 30px;
+      margin-top: -80px; padding: 0 24px 40px;
     }
 
     .avatarWrapper {
-      border: 6px solid $white; border-radius: 35%; overflow: hidden;
-      width: 130px; height: 130px; background: #f1f2f6; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-      img { width: 100%; height: 100%; object-fit: cover; }
+      position: relative;
+      border: 6px solid $white; border-radius: 42px;
+      width: 150px; height: 150px; background: #f8fafc;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      
+      img { width: 100%; height: 100%; object-fit: cover; border-radius: 36px; }
+
+      .onlineStatus {
+        position: absolute; bottom: 8px; right: 8px;
+        width: 20px; height: 20px; background: #22c55e;
+        border: 4px solid $white; border-radius: 50%;
+      }
     }
 
     .nameSection {
-      margin-left: 25px; flex: 1; padding-bottom: 10px;
-      @media (max-width: 992px) { margin: 15px 0; }
-      h1 { margin: 0; font-size: 2rem; color: $text-main; font-weight: 800; }
+      margin-left: 32px; flex: 1; 
+      padding-top: 25px; // ĐÃ THÊM: Dịch tên xuống một chút cho cân đối
+      padding-bottom: 12px;
+      
+      @media (max-width: 992px) { margin: 20px 0; padding-top: 0; }
+      
+      h1 { 
+        margin: 0; font-size: 2.25rem; color: $text-main; font-weight: 900; 
+        letter-spacing: -0.025em; line-height: 1.1;
+      }
+      
       .tags {
-        display: flex; gap: 10px; margin-top: 8px;
+        display: flex; gap: 12px; margin-top: 10px;
         @media (max-width: 992px) { justify-content: center; }
-        .tag { font-size: 0.8rem; color: $text-muted; background: #f1f2f6; padding: 4px 12px; border-radius: 50px; }
+        
+        .tag {
+          font-size: 0.85rem; color: $text-muted; background: #f1f5f9;
+          padding: 6px 16px; border-radius: 100px;
+          display: flex; align-items: center; gap: 6px;
+          font-weight: 500;
+
+          &.gold { background: #fefce8; color: #a16207; border: 1px solid #fef08a; }
+        }
       }
     }
 
     .actionGroup {
-      display: flex;
-      gap: 12px;
-      padding-bottom: 10px;
+      display: flex; gap: 12px; padding-bottom: 12px;
+      @media (max-width: 992px) { width: 100%; justify-content: center; flex-wrap: wrap; }
 
-      @media (max-width: 992px) { width: 100%; flex-direction: column; }
-
-      .editBtn, .historyBtn {
+      .editBtn, .historyBtn, .logoutBtn {
         display: flex; align-items: center; justify-content: center; gap: 8px;
-        padding: 12px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s;
-        font-size: 0.95rem;
+        padding: 10px 20px; border-radius: 14px; font-weight: 700;
+        cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 0.9rem;
       }
 
       .editBtn {
         background: $primary; color: white; border: none;
-        box-shadow: 0 4px 15px rgba($primary, 0.2);
-        &:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        box-shadow: 0 4px 12px rgba($primary, 0.2);
+        &:hover { transform: translateY(-3px); background: darken($primary, 5%); }
       }
 
       .historyBtn {
-        background: $white; color: $text-main; border: 1px solid #dfe6e9;
+        background: $white; color: $text-main; border: 1px solid #e2e8f0;
         &:hover { background: #f8fafc; border-color: $primary; color: $primary; }
+      }
+
+      // ĐÃ THÊM: Style cho nút Đăng xuất
+      .logoutBtn {
+        background: #fff1f2; color: #e11d48; border: 1px solid #fda4af;
+        &:hover { 
+          background: #ffe4e6; border-color: #e11d48; 
+          transform: translateY(-3px); 
+          box-shadow: 0 4px 12px rgba(225, 29, 72, 0.15);
+        }
       }
     }
   }
 }
 
+// Giữ lại các class mainGrid, card, statBox, infoList giống như cũ của bạn...
 .mainGrid {
-  display: grid; grid-template-columns: 350px 1fr; gap: 30px;
+  display: grid; grid-template-columns: 360px 1fr; gap: 32px;
   @media (max-width: 992px) { grid-template-columns: 1fr; }
 }
-
 .card {
-  background: $white; padding: 25px; border-radius: $radius-lg; box-shadow: $shadow-soft;
+  background: $white; padding: 32px; border-radius: $radius-lg; 
+  box-shadow: $shadow-soft; border: 1px solid rgba(0, 0, 0, 0.01);
   h3 {
-    font-size: 1.15rem; margin-bottom: 20px; display: flex; align-items: center;
-    &::before { content: ''; width: 4px; height: 16px; background: $primary; margin-right: 10px; border-radius: 10px; }
-  }
-}
-
-.statGrid {
-  display: grid; gap: 15px;
-  .statBox {
-    display: flex; align-items: center; background: #f8fafc; padding: 18px; border-radius: $radius-md;
-    .iconBox {
-      width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 15px;
-      &.point { background: #fff4e5; color: #ff9800; }
-      &.streak { background: #ffebee; color: #f44336; }
-    }
-    .statData {
-      strong { display: block; font-size: 1.25rem; color: $text-main; }
-      span { font-size: 0.85rem; color: $text-muted; }
+    font-size: 1.25rem; margin: 0 0 24px 0; color: $text-main; font-weight: 800;
+    display: flex; align-items: center;
+    &::before {
+      content: ''; width: 6px; height: 20px; background: $primary;
+      margin-right: 14px; border-radius: 10px;
     }
   }
 }
-
+.statBox {
+  display: flex; align-items: center; background: #f8fafc;
+  padding: 24px; border-radius: $radius-md; transition: 0.3s;
+  border: 1px solid transparent; margin-bottom: 16px;
+  &:hover { border-color: rgba($primary, 0.2); background: $white; transform: translateX(5px); }
+  .iconBox {
+    width: 56px; height: 56px; border-radius: 16px;
+    display: flex; align-items: center; justify-content: center; margin-right: 20px;
+    &.point { background: #fff7ed; color: #f97316; }
+    &.streak { background: #fef2f2; color: #ef4444; }
+  }
+  .statData {
+    strong { display: block; font-size: 1.5rem; color: $text-main; font-weight: 800; }
+    span { font-size: 0.9rem; color: $text-muted; font-weight: 500; }
+  }
+}
 .infoList {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 25px;
-  @media (max-width: 600px) { grid-template-columns: 1fr; }
+  display: grid; grid-template-columns: 1fr 1fr; gap: 32px;
+  @media (max-width: 640px) { grid-template-columns: 1fr; }
   .infoItem {
-    display: flex; gap: 15px;
-    .itemIcon { color: $primary; background: rgba($primary, 0.1); padding: 8px; border-radius: 10px; height: fit-content; }
+    display: flex; gap: 20px; padding: 16px; border-radius: $radius-md;
+    transition: 0.2s;
+    &:hover { background: #f8fafc; }
+    .itemIcon {
+      color: $primary; background: rgba($primary, 0.1);
+      padding: 10px; border-radius: 12px; height: 44px; width: 44px;
+      display: flex; align-items: center; justify-content: center;
+    }
     .itemContent {
-      label { font-size: 0.7rem; color: #b2bec3; text-transform: uppercase; font-weight: 700; }
-      p { margin-top: 4px; font-weight: 600; color: $text-main; }
+      label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; }
+      p { margin: 4px 0 0 0; font-size: 1.05rem; font-weight: 600; color: $text-main; }
     }
   }
 }
 
-.loadingWrapper { height: 80vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-.spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top-color: $primary; border-radius: 50%; animation: spin 1s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.errorContainer {
-  text-align: center; padding: 100px 20px;
-  .primaryBtn { background: $primary; color: white; border: none; padding: 12px 30px; border-radius: 50px; cursor: pointer; }
+.loadingWrapper {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh;
+  .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid $primary; border-radius: 50%; animation: spin 1s linear infinite; }
+  p { margin-top: 15px; color: $text-muted; font-weight: 500; }
 }
+
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
