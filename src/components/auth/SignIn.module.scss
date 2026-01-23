@@ -216,3 +216,34 @@ $radius: 16px;
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+.optionsRow {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+
+  .rememberMe {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #666;
+
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+  }
+}
+
+.fieldError {
+  color: #ff4d4f;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+}
+
+.inputWrapper.error {
+  border-color: #ff4d4f; // Highlight viền đỏ khi có lỗi
+}

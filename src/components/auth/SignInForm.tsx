@@ -8,23 +8,41 @@ const cx = classNames.bind(styles);
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
-  const [isChecked, setIsChecked] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false); // State cho Remember Me
+
+  // Quản lý lỗi riêng biệt
+  const [fieldErrors, setFieldErrors] = useState({ email: "", password: "" });
+  const [generalError, setGeneralError] = useState("");
+  const [success, setSuccess] = useState("");
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setGeneralError("");
+    setFieldErrors({ email: "", password: "" });
     setSuccess("");
 
-    if (!email || !password) {
-      setError("Vui lòng nhập đầy đủ email và mật khẩu.");
-      return;
+    // Validate riêng từng trường
+    let hasError = false;
+    if (!email) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        email: "Please enter your email.",
+      }));
+      hasError = true;
     }
+    if (!password) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        password: "Please enter your password.",
+      }));
+      hasError = true;
+    }
+    if (hasError) return;
 
     setIsLoading(true);
 
@@ -39,43 +57,45 @@ export default function SignInForm() {
         }),
       });
 
-      const result = await response.json();
+      let result: any = {};
+      try {
+        result = await response.json();
+      } catch {}
 
       if (response.ok && result.accessToken) {
-        // --- CHỈ DÙNG LOCAL STORAGE ---
-
-        // 1. Xóa dữ liệu cũ cho chắc ăn
+        // Xóa data cũ
         localStorage.clear();
         sessionStorage.clear();
 
-        // 2. Lưu vào Local Storage
-        localStorage.setItem("accessToken", result.accessToken);
+        // Xử lý Ghi nhớ đăng nhập
+        const storage = rememberMe ? localStorage : sessionStorage;
 
+        storage.setItem("accessToken", result.accessToken);
         if (result.user) {
-          localStorage.setItem("userRole", result.user.role?.name || "User");
-          localStorage.setItem("userName", result.user.name || "");
-          localStorage.setItem("userId", result.user.id.toString());
+          storage.setItem("userId", result.user.id?.toString() || "");
+          storage.setItem("userName", result.user.name || "");
+          storage.setItem("userRole", result.user.role?.name || "User");
         }
 
-        setSuccess(`Chào mừng ${result.user?.name || "bạn"} trở lại!`);
-
-        // --- PHÂN QUYỀN ĐIỀU HƯỚNG ---
-        const userRole = result.user?.role?.name;
+        setSuccess(`Welcome back, ${result.user?.name || "user"}!`);
 
         setTimeout(() => {
-          if (userRole === "Owner" || userRole === "Admin") {
-            navigate("/admin/");
-          } else {
-            navigate("/");
-          }
-          // Reload để các component khác (Header, Sidebar) nhận dữ liệu mới từ Storage
+          const role = result.user?.role?.name;
+          navigate(role === "Admin" || role === "Owner" ? "/admin/" : "/");
           window.location.reload();
         }, 800);
+        return;
+      }
+
+      if (response.status === 401) {
+        setGeneralError("Invalid email or password.");
       } else {
-        setError(result.message || "Email hoặc mật khẩu không chính xác.");
+        setGeneralError(
+          result.message || "An error occurred, please try again.",
+        );
       }
     } catch (err) {
-      setError("Lỗi kết nối đến máy chủ.");
+      setGeneralError("Could not connect to the server.");
     } finally {
       setIsLoading(false);
     }
@@ -85,7 +105,7 @@ export default function SignInForm() {
     <div className={cx("signInPage")}>
       <div className={cx("container")}>
         <button className={cx("backBtn")} onClick={() => navigate("/")}>
-          <ChevronLeft size={20} /> Quay lại trang chủ
+          <ChevronLeft size={20} /> Back to home
         </button>
 
         <div className={cx("formCard")}>
@@ -94,40 +114,45 @@ export default function SignInForm() {
               <span className={cx("logoText")}>GO</span>
               <span className={cx("logoHighlight")}>PITCH</span>
             </div>
-            <h1>Chào mừng trở lại!</h1>
-            <p>Vui lòng đăng nhập để tiếp tục.</p>
+            <h1>Welcome Back!</h1>
+            <p>Please sign in to continue.</p>
           </div>
 
           <form onSubmit={handleSubmit} className={cx("form")}>
+            {/* Email Input */}
             <div className={cx("inputGroup")}>
               <label>Email</label>
-              <div className={cx("inputWrapper")}>
+              <div className={cx("inputWrapper", { error: fieldErrors.email })}>
                 <Mail className={cx("icon")} size={18} />
                 <input
                   type="email"
                   placeholder="name@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  required
                 />
               </div>
+              {fieldErrors.email && (
+                <span className={cx("fieldError")}>{fieldErrors.email}</span>
+              )}
             </div>
 
+            {/* Password Input */}
             <div className={cx("inputGroup")}>
               <div className={cx("labelRow")}>
-                <label>Mật khẩu</label>
+                <label>Password</label>
                 <Link to="/reset-password" className={cx("forgotLink")}>
-                  Quên?
+                  Forgot?
                 </Link>
               </div>
-              <div className={cx("inputWrapper")}>
+              <div
+                className={cx("inputWrapper", { error: fieldErrors.password })}
+              >
                 <Lock className={cx("icon")} size={18} />
                 <input
                   type={showPassword ? "text" : "password"}
-                  placeholder="Mật khẩu"
+                  placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required
                 />
                 <button
                   type="button"
@@ -137,9 +162,26 @@ export default function SignInForm() {
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
+              {fieldErrors.password && (
+                <span className={cx("fieldError")}>{fieldErrors.password}</span>
+              )}
             </div>
 
-            {error && <div className={cx("alert", "error")}>{error}</div>}
+            {/* Remember Me Checkbox */}
+            <div className={cx("optionsRow")}>
+              <label className={cx("rememberMe")}>
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                />
+                <span>Remember me</span>
+              </label>
+            </div>
+
+            {generalError && (
+              <div className={cx("alert", "error")}>{generalError}</div>
+            )}
             {success && <div className={cx("alert", "success")}>{success}</div>}
 
             <button
@@ -147,12 +189,12 @@ export default function SignInForm() {
               className={cx("submitBtn")}
               disabled={isLoading}
             >
-              {isLoading ? <div className={cx("spinner")}></div> : "Đăng nhập"}
+              {isLoading ? <div className={cx("spinner")} /> : "Đăng nhập"}
             </button>
           </form>
 
           <p className={cx("footerText")}>
-            Chưa có tài khoản? <Link to="/signup">Đăng ký ngay</Link>
+            Don't have an account? <Link to="/signup">Sign up now</Link>
           </p>
         </div>
       </div>

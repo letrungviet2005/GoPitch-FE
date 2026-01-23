@@ -13,7 +13,7 @@ import {
   ShieldCheck,
   Calendar,
   History,
-  LogOut, // Import icon Đăng xuất
+  LogOut,
 } from "lucide-react";
 import styles from "./Profile.module.scss";
 
@@ -41,40 +41,44 @@ const Profile = () => {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      try {
-        const token =
-          localStorage.getItem("accessToken") ||
-          sessionStorage.getItem("accessToken");
-        if (!token) {
-          setLoading(false);
-          return;
-        }
+      const token =
+        localStorage.getItem("accessToken") ||
+        sessionStorage.getItem("accessToken");
 
+      // 1. Nếu không có token, đá ra trang signin ngay lập tức
+      if (!token) {
+        navigate("/signin");
+        return;
+      }
+
+      try {
         const response = await axios.get(
           "http://localhost:8080/api/v1/users/me",
           {
             headers: { Authorization: `Bearer ${token}` },
-          }
+          },
         );
 
         const data = response.data.result || response.data;
         setUser(data);
       } catch (error) {
         console.error("Lỗi lấy thông tin cá nhân:", error);
+        // Nếu lỗi 401 (hết hạn), cũng nên đá ra login
+        if (axios.isAxiosError(error) && error.response?.status === 401) {
+          navigate("/signin");
+        }
       } finally {
         setLoading(false);
       }
     };
     fetchProfile();
-  }, []);
+  }, [navigate]);
 
-  // HÀM ĐĂNG XUẤT CHUẨN
   const handleLogout = () => {
-    // 1. Xóa storage
     localStorage.removeItem("accessToken");
     sessionStorage.removeItem("accessToken");
 
-    // 2. Xóa Cookie (Xóa tất cả cookie để đảm bảo sạch sẽ)
+    // Xóa Cookie sạch sẽ
     const cookies = document.cookie.split(";");
     for (let i = 0; i < cookies.length; i++) {
       const cookie = cookies[i];
@@ -83,7 +87,6 @@ const Profile = () => {
       document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
     }
 
-    // 3. Quay lại trang đăng nhập
     navigate("/signin");
   };
 
@@ -94,6 +97,9 @@ const Profile = () => {
         <p>Đang tải hồ sơ của bạn...</p>
       </div>
     );
+
+  // 2. Chặn lỗi crash: Nếu không có user thì không render phần dưới
+  if (!user) return null;
 
   return (
     <div className={cx("profilePage")}>
@@ -109,15 +115,16 @@ const Profile = () => {
 
           <div className={cx("profileInfo")}>
             <div className={cx("avatarWrapper")}>
+              {/* Dùng Optional Chaining ?.name */}
               <img
-                src={`https://ui-avatars.com/api/?name=${user.name}&background=00b894&color=fff&size=128&bold=true`}
+                src={`https://ui-avatars.com/api/?name=${user?.name || "User"}&background=00b894&color=fff&size=128&bold=true`}
                 alt="Avatar"
               />
               <div className={cx("onlineStatus")}></div>
             </div>
 
             <div className={cx("nameSection")}>
-              <h1>{user.userInformation?.fullName || user.name}</h1>
+              <h1>{user?.userInformation?.fullName || user?.name}</h1>
               <div className={cx("tags")}>
                 <span className={cx("tag")}>
                   <Calendar size={14} /> Gia nhập 2024
@@ -155,7 +162,7 @@ const Profile = () => {
                     <Award size={24} />
                   </div>
                   <div className={cx("statData")}>
-                    <strong>{user.point.toLocaleString()}</strong>
+                    <strong>{user?.point?.toLocaleString() || 0}</strong>
                     <span>Điểm tích lũy</span>
                   </div>
                 </div>
@@ -164,7 +171,7 @@ const Profile = () => {
                     <Flame size={24} />
                   </div>
                   <div className={cx("statData")}>
-                    <strong>{user.streakCount}</strong>
+                    <strong>{user?.streakCount || 0}</strong>
                     <span>Ngày streak</span>
                   </div>
                 </div>
@@ -177,21 +184,22 @@ const Profile = () => {
               <h3>Thông tin tài khoản</h3>
               <div className={cx("infoList")}>
                 {[
-                  { icon: <Mail />, label: "Email", value: user.email },
+                  { icon: <Mail />, label: "Email", value: user?.email },
                   {
                     icon: <Phone />,
                     label: "Số điện thoại",
-                    value: user.userInformation?.phoneNumber || "Chưa cập nhật",
+                    value:
+                      user?.userInformation?.phoneNumber || "Chưa cập nhật",
                   },
                   {
                     icon: <MapPin />,
                     label: "Địa chỉ",
-                    value: user.userInformation?.address || "Chưa cập nhật",
+                    value: user?.userInformation?.address || "Chưa cập nhật",
                   },
                   {
                     icon: <MapIcon />,
                     label: "Tọa độ GPS",
-                    value: user.userInformation?.latitude
+                    value: user?.userInformation?.latitude
                       ? `${user.userInformation.latitude}, ${user.userInformation.longitude}`
                       : "Chưa xác định",
                   },
