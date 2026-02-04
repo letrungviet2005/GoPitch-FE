@@ -77,7 +77,7 @@ export default function SignInForm() {
           storage.setItem("userRole", result.user.role?.name || "User");
         }
 
-        setSuccess(`Welcome back, ${result.user?.name || "user"}!`);
+        setSuccess(`Chào mừng trở lại, ${result.user?.name || "user"}!`);
 
         setTimeout(() => {
           const role = result.user?.role?.name;
