@@ -1,11 +1,5 @@
 import React, { useEffect } from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-  Outlet,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { handleAndStoreLocation } from "./hooks/locationHandler";
 
 // Import Layouts & Common
@@ -39,19 +33,20 @@ import ContactPage from "./pages/Client/Contact/Contact";
 import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./components/auth/SignUpForm";
 import NotFound from "./pages/OtherPage/NotFound";
+import ProtectedRoute from "./authentication/authentication";
 
 // COMPONENT BẢO VỆ ROUTE
-const ProtectedRoute = ({ allowedRoles }: { allowedRoles: string[] }) => {
-  const token =
-    localStorage.getItem("accessToken") ||
-    sessionStorage.getItem("accessToken");
-  const role = localStorage.getItem("userRole"); // Hãy đảm bảo bạn lưu role vào đây khi Login thành công
+// const ProtectedRoute = ({ allowedRoles }: { allowedRoles: string[] }) => {
+//   const token =
+//     localStorage.getItem("accessToken") ||
+//     sessionStorage.getItem("accessToken");
+//   const role = localStorage.getItem("userRole"); // Hãy đảm bảo bạn lưu role vào đây khi Login thành công
 
-  if (!token) return <Navigate to="/signin" replace />;
-  if (!allowedRoles.includes(role || "")) return <Navigate to="/" replace />;
+//   // if (!token) return <Navigate to="/signin" replace />;
+//   // if (!allowedRoles.includes(role || "")) return <Navigate to="/" replace />;
 
-  return <Outlet />;
-};
+//   return <Outlet />;
+// };
 
 export default function App() {
   useEffect(() => {
@@ -62,8 +57,10 @@ export default function App() {
     <Router>
       <ScrollToTop />
       <Routes>
-        {/* ================= ADMIN & OWNER ROUTES (BỊ KHÓA) ================= */}
-        <Route element={<ProtectedRoute allowedRoles={["Admin", "Owner"]} />}>
+        {/* ================= ADMIN & OWNER ROUTES ================= */}
+        <Route
+          element={<ProtectedRoute allowedRoles={["Admin", "Owner", "User"]} />}
+        >
           <Route path="/admin" element={<AppLayout />}>
             <Route index element={<Home />} />
             <Route path="clubs" element={<Club />} />

@@ -7,15 +7,16 @@ const ProtectedRoute = ({ allowedRoles }: { allowedRoles: string[] }) => {
     sessionStorage.getItem("accessToken");
 
   const userRole = localStorage.getItem("userRole");
+  console.log("User Role:", userRole);
 
   if (!accessToken) {
     return <Navigate to="/signin" replace />;
   }
 
   if (!allowedRoles.includes(userRole || "")) {
-    // Nếu có token nhưng sai quyền, đẩy về trang chủ hoặc 404
     return <Navigate to="/" replace />;
   }
 
   return <Outlet />;
 };
+export default ProtectedRoute;
