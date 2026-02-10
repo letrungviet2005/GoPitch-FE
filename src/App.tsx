@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { handleAndStoreLocation } from "./hooks/locationHandler";
 
@@ -7,7 +7,6 @@ import AppLayout from "./layout/AppLayout";
 import AppLayoutClient from "./pages/Client/layout/AppLayoutClient";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 
-// Import Pages (Admin)
 import Home from "./pages/Admin/Dashboard/Home";
 import Club from "./pages/Admin/Club/Club";
 import Pitches from "./pages/Admin/Pitch/Pitch";
@@ -15,7 +14,6 @@ import Revenue from "./pages/Admin/Revenue/Revenue";
 import ClubAdd from "./pages/Admin/Club/ClubAdd/ClubAdd";
 import ClubUpdate from "./pages/Admin/Club/ClubUpdate/ClubUpdate";
 
-// Import Pages (Client)
 import HomePage from "./pages/Client/HomePage/HomePage";
 import Pitch from "./pages/Client/Pitch/Pitch";
 import DetailPitch from "./pages/Client/DetailPitch/DetailPitch";
