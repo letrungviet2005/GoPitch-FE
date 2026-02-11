@@ -27,13 +27,12 @@ import Maps from "./pages/Client/Maps/ClubMap";
 import ChatBot from "./pages/Client/ChatBot/ChatBot";
 import ContactPage from "./pages/Client/Contact/Contact";
 
-// Import Auth & Other
 import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./components/auth/SignUpForm";
 import NotFound from "./pages/OtherPage/NotFound";
 import ProtectedRoute from "./authentication/authentication";
 
-// COMPONENT BẢO VỆ ROUTE
+// Component protected function
 // const ProtectedRoute = ({ allowedRoles }: { allowedRoles: string[] }) => {
 //   const token =
 //     localStorage.getItem("accessToken") ||
