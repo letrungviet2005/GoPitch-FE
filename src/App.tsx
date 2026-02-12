@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { handleAndStoreLocation } from "./hooks/locationHandler";
 
-// Import Layouts & Common
 import AppLayout from "./layout/AppLayout";
 import AppLayoutClient from "./pages/Client/layout/AppLayoutClient";
 import { ScrollToTop } from "./components/common/ScrollToTop";
