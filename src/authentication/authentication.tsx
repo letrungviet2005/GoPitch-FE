@@ -1,6 +1,5 @@
 import { Navigate, Outlet } from "react-router-dom";
 
-// Component kiểm tra quyền
 const ProtectedRoute = ({ allowedRoles }: { allowedRoles: string[] }) => {
   const accessToken =
     localStorage.getItem("accessToken") ||
