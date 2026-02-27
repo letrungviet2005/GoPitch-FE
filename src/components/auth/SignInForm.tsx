@@ -63,7 +63,6 @@ export default function SignInForm() {
       } catch {}
 
       if (response.ok && result.accessToken) {
-        // Xóa data cũ
         localStorage.clear();
         sessionStorage.clear();
 
