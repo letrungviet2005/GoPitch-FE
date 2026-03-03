@@ -40,7 +40,6 @@ export default function SignUpForm() {
     setError("");
     setSuccess("");
 
-    // Validate cơ bản
     if (formData.password !== formData.confirmPassword) {
       setError("Mật khẩu nhập lại không khớp!");
       return;
