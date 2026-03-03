@@ -65,8 +65,6 @@ export default function SignInForm() {
       if (response.ok && result.accessToken) {
         localStorage.clear();
         sessionStorage.clear();
-
-        // Xử lý Ghi nhớ đăng nhập
         const storage = rememberMe ? localStorage : sessionStorage;
 
         storage.setItem("accessToken", result.accessToken);
