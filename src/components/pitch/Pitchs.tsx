@@ -25,16 +25,13 @@ const Pitchs: React.FC<PitchsProps> = ({
     <div className={cx("pitchCard")}>
       <div className={cx("pitchImage")}>
         <img src={image} alt={name} />
-        {/* Đã xóa distance-tag ở đây */}
       </div>
 
       <div className={cx("pitchInfo")}>
-        {/* Nếu ông có avatar thì để đây, không thì bỏ qua */}
         <div className={cx("pitchDetails")}>
           <h3>{name}</h3>
           <p className={cx("address")}>📍 {address}</p>
 
-          {/* HIỂN THỊ SỐ KM Ở ĐÂY */}
           {distance && (
             <p className={cx("distanceText")}>
               🏃 Cách đây: <strong>{distance}</strong>
