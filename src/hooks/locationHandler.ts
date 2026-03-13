@@ -6,7 +6,7 @@ interface UserCoords {
 }
 
 const LOCATION_COOKIE_KEY = 'user_coords';
-const COOKIE_EXPIRE_DAYS = 1; // Cookie sẽ hết hạn sau 1 ngày
+const COOKIE_EXPIRE_DAYS = 1; 
 
 export const handleAndStoreLocation = (): void => {
     if (!navigator.geolocation) {
