@@ -44,8 +44,6 @@ export const handleAndStoreLocation = (): void => {
         }
     );
 };
-
-// Hàm bổ trợ để ông lấy tọa độ ra sử dụng ở chỗ khác
 export const getStoredLocation = (): UserCoords | null => {
     const savedLocation = Cookies.get(LOCATION_COOKIE_KEY);
     if (savedLocation) {
