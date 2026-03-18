@@ -19,8 +19,6 @@ export const handleAndStoreLocation = (): void => {
             const { latitude, longitude } = position.coords;
             const coords: UserCoords = { lat: latitude, lng: longitude };
 
-            // Lưu vào cookie dưới dạng chuỗi JSON
-            // Secure: true đảm bảo chỉ gửi qua HTTPS, SameSite: Lạnh lùng bảo mật
             Cookies.set(LOCATION_COOKIE_KEY, JSON.stringify(coords), { 
                 expires: COOKIE_EXPIRE_DAYS,
                 path: '/' 
