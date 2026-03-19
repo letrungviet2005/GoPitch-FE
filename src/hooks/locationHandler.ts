@@ -27,8 +27,6 @@ export const handleAndStoreLocation = (): void => {
             console.log("Đã lưu tọa độ vào Cookie:", coords);
         },
         (error) => {
-            // Nếu người dùng từ chối (User denied Geolocation)
-            // hoặc có lỗi khác, chúng ta không làm gì cả như ông yêu cầu
             switch (error.code) {
                 case error.PERMISSION_DENIED:
                     console.log("Người dùng từ chối cấp quyền vị trí.");
