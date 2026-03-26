@@ -31,19 +31,6 @@ import SignUp from "./components/auth/SignUpForm";
 import NotFound from "./pages/OtherPage/NotFound";
 import ProtectedRoute from "./authentication/authentication";
 
-// Component protected function
-// const ProtectedRoute = ({ allowedRoles }: { allowedRoles: string[] }) => {
-//   const token =
-//     localStorage.getItem("accessToken") ||
-//     sessionStorage.getItem("accessToken");
-//   const role = localStorage.getItem("userRole"); // Hãy đảm bảo bạn lưu role vào đây khi Login thành công
-
-//   // if (!token) return <Navigate to="/signin" replace />;
-//   // if (!allowedRoles.includes(role || "")) return <Navigate to="/" replace />;
-
-//   return <Outlet />;
-// };
-
 export default function App() {
   useEffect(() => {
     handleAndStoreLocation();
