@@ -17,7 +17,7 @@ import PageMeta from "../../../components/common/PageMeta";
 
 export default function AdminHome() {
   const navigate = useNavigate();
-  const [user] = useState<any>(true); // Thay bằng logic auth thực tế của bạn
+  const [user] = useState<any>(true); 
   const [loading, setLoading] = useState(true);
 
   // 1. Bảo vệ Route: Điều hướng ngay nếu chưa có user
