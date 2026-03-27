@@ -20,7 +20,6 @@ export default function AdminHome() {
   const [user] = useState<any>(true); 
   const [loading, setLoading] = useState(true);
 
-  // 1. Bảo vệ Route: Điều hướng ngay nếu chưa có user
   useEffect(() => {
     if (!user) {
       navigate("/signin", { replace: true });
