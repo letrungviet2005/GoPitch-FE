@@ -5,7 +5,6 @@ const AdminGuard = () => {
     localStorage.getItem("accessToken") ||
     sessionStorage.getItem("accessToken");
 
-  // Nếu không có token, đá về trang login ngay lập tức
   if (!token) {
     return <Navigate to="/signin" replace />;
   }
