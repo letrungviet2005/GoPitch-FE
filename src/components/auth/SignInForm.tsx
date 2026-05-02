@@ -115,7 +115,6 @@ export default function SignInForm() {
           </div>
 
           <form onSubmit={handleSubmit} className={cx("form")}>
-            {/* Email Input */}
             <div className={cx("inputGroup")}>
               <label>Email</label>
               <div className={cx("inputWrapper", { error: fieldErrors.email })}>
