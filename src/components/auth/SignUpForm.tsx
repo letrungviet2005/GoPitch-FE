@@ -22,7 +22,6 @@ export default function SignUpForm() {
   const [success, setSuccess] = useState("");
   const navigate = useNavigate();
 
-  // Form State
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -56,7 +55,6 @@ export default function SignUpForm() {
           name: formData.fullName,
           email: formData.email,
           password: formData.password,
-          // Thêm các field khác tùy theo Backend của ông
         }),
       });
 
@@ -109,7 +107,6 @@ export default function SignUpForm() {
             </div>
 
             <div className={cx("row")}>
-              {/* Email */}
               <div className={cx("inputGroup")}>
                 <label>Email</label>
                 <div className={cx("inputWrapper")}>
@@ -123,7 +120,6 @@ export default function SignUpForm() {
                   />
                 </div>
               </div>
-              {/* Số điện thoại */}
               <div className={cx("inputGroup")}>
                 <label>Số điện thoại</label>
                 <div className={cx("inputWrapper")}>
@@ -139,7 +135,6 @@ export default function SignUpForm() {
               </div>
             </div>
 
-            {/* Mật khẩu */}
             <div className={cx("inputGroup")}>
               <label>Mật khẩu</label>
               <div className={cx("inputWrapper")}>
@@ -154,7 +149,6 @@ export default function SignUpForm() {
               </div>
             </div>
 
-            {/* Nhập lại mật khẩu */}
             <div className={cx("inputGroup")}>
               <label>Xác nhận mật khẩu</label>
               <div className={cx("inputWrapper")}>
@@ -200,4 +194,3 @@ export default function SignUpForm() {
     </div>
   );
 }
-  
