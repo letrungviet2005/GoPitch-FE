@@ -11,9 +11,9 @@ export default function SignInForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false); // State cho Remember Me
+  const [rememberMe, setRememberMe] = useState(false);
 
-  // Quản lý lỗi riêng biệt
+  //State error
   const [fieldErrors, setFieldErrors] = useState({ email: "", password: "" });
   const [generalError, setGeneralError] = useState("");
   const [success, setSuccess] = useState("");
@@ -26,7 +26,6 @@ export default function SignInForm() {
     setFieldErrors({ email: "", password: "" });
     setSuccess("");
 
-    // Validate riêng từng trường
     let hasError = false;
     if (!email) {
       setFieldErrors((prev) => ({
@@ -44,7 +43,7 @@ export default function SignInForm() {
     }
     if (hasError) return;
     setIsLoading(true);
-    
+
     try {
       const API_URL = "http://localhost:8080/api/v1";
       const response = await fetch(`${API_URL}/auth/login`, {
