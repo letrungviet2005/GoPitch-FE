@@ -162,7 +162,6 @@ export default function SignInForm() {
               )}
             </div>
 
-            {/* Remember Me Checkbox */}
             <div className={cx("optionsRow")}>
               <label className={cx("rememberMe")}>
                 <input
