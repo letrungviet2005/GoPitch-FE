@@ -58,7 +58,9 @@ export default function SignInForm() {
       let result: any = {};
       try {
         result = await response.json();
-      } catch {}
+      } catch {
+        // If response is not JSON, keep result as empty object
+      }
 
       if (response.ok && result.accessToken) {
         localStorage.clear();
