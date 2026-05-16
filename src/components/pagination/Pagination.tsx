@@ -4,7 +4,6 @@ import styles from "./Pagination.module.scss";
 const cx = classNames.bind(styles);
 
 const Pagination = ({ currentPage, totalPages, onPageChange }) => {
-  // Tạo mảng số trang
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
   return (
@@ -17,7 +16,6 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
         « Prev
       </button>
 
-      {/* Các số trang */}
       {pages.map((page) => (
         <button
           key={page}
