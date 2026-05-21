@@ -8,7 +8,6 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
 
   return (
     <div className={cx("pagination")}>
-      {/* Nút Prev */}
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
