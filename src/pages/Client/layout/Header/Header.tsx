@@ -1,30 +1,30 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import {
-  User,
-  Map,
-  LayoutGrid,
-  PhoneCall,
-  Home,
-  ChevronDown,
-  LogOut,
-} from "lucide-react";
+import { Map, LayoutGrid, PhoneCall, Home, ChevronDown } from "lucide-react";
 
 const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [scrolled, setScrolled] = useState(false);
 
-  // Hiệu ứng đổi màu khi cuộn trang
+  const [scrolled, setScrolled] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
+
     window.addEventListener("scroll", handleScroll);
+
+    const token =
+      localStorage.getItem("accessToken") ||
+      sessionStorage.getItem("accessToken");
+
+    setIsLoggedIn(!!token);
+
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const isActive = (path) => location.pathname === path;
 
-  // Render Nav Item
   const NavItem = ({ path, icon: Icon, label }) => (
     <button
       onClick={() => navigate(path)}
@@ -72,32 +72,52 @@ const Header = () => {
             <NavItem path="/contact" icon={PhoneCall} label="Liên hệ" />
           </nav>
 
-          {/* ACTIONS / PROFILE */}
+          {/* PROFILE / AUTH */}
           <div className="flex items-center gap-3">
-            <div
-              className="flex items-center gap-3 p-1.5 pr-4 rounded-full border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors shadow-sm"
-              onClick={() => navigate("/profile")}
-            >
-              <div className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-emerald-500/20">
-                <img
-                  src="https://tse4.mm.bing.net/th/id/OIP.LkrCBJoljYJlA43RIOjTdwHaHa?pid=Api&P=0&h=180"
-                  alt="Avatar"
-                  className="w-full h-full object-cover"
+            {isLoggedIn ? (
+              <div
+                className="flex items-center gap-3 p-1.5 pr-4 rounded-full border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors shadow-sm"
+                onClick={() => navigate("/profile")}
+              >
+                <div className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-emerald-500/20">
+                  <img
+                    src="https://tse4.mm.bing.net/th/id/OIP.LkrCBJoljYJlA43RIOjTdwHaHa?pid=Api&P=0&h=180"
+                    alt="Avatar"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+
+                <div className="hidden sm:block">
+                  <p className="text-xs text-slate-400 font-medium leading-none mb-1">
+                    Chào bạn,
+                  </p>
+                  <p className="text-sm font-bold text-slate-700 leading-none">
+                    Tài khoản
+                  </p>
+                </div>
+
+                <ChevronDown
+                  size={14}
+                  className="text-slate-400 hidden sm:block"
                 />
               </div>
-              <div className="hidden sm:block">
-                <p className="text-xs text-slate-400 font-medium leading-none mb-1">
-                  Chào bạn,
-                </p>
-                <p className="text-sm font-bold text-slate-700 leading-none">
-                  Tài khoản
-                </p>
-              </div>
-              <ChevronDown
-                size={14}
-                className="text-slate-400 hidden sm:block"
-              />
-            </div>
+            ) : (
+              <>
+                <button
+                  onClick={() => navigate("/signin")}
+                  className="px-4 py-2 text-slate-700 font-medium hover:text-emerald-600 transition"
+                >
+                  Đăng nhập
+                </button>
+
+                <button
+                  onClick={() => navigate("/signup")}
+                  className="px-5 py-2 rounded-xl bg-emerald-500 text-white font-medium hover:bg-emerald-600 transition shadow-md"
+                >
+                  Đăng ký
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>

@@ -38,6 +38,11 @@ const navItems: NavItem[] = [
     name: "Quản lý Club - Sân",
     path: "/admin/clubs",
   },
+  {
+    icon: <PieChartIcon />,
+    name: "Dự đoán tỉ lệ sân",
+    path: "/admin/predict",
+  },
 ];
 
 const othersItems: NavItem[] = [
@@ -58,13 +63,13 @@ const AppSidebar: React.FC = () => {
   } | null>(null);
 
   const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>(
-    {}
+    {},
   );
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const isActive = useCallback(
     (path: string) => location.pathname === path,
-    [location.pathname]
+    [location.pathname],
   );
 
   // Logic tự động mở menu khi đường dẫn trùng khớp

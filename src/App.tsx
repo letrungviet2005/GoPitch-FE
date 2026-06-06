@@ -30,6 +30,7 @@ import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./components/auth/SignUpForm";
 import NotFound from "./pages/OtherPage/NotFound";
 import ProtectedRoute from "./authentication/authentication";
+import PredictionDashboard from "./pages/Admin/AI/PredictionDashboard";
 
 export default function App() {
   useEffect(() => {
@@ -51,6 +52,7 @@ export default function App() {
             <Route path="revenue" element={<Revenue />} />
             <Route path="clubs/add" element={<ClubAdd />} />
             <Route path="clubs/details/:id" element={<ClubUpdate />} />
+            <Route path="predict" element={<PredictionDashboard />} />
           </Route>
         </Route>
 
