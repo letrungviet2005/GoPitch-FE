@@ -55,7 +55,7 @@ export default function ChatBot() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       if (response.data && response.data.reply) {
@@ -187,7 +187,7 @@ export default function ChatBot() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                placeholder="Nhập yêu cầu của đại ca..."
+                placeholder="Nhập yêu cầu của bạn..."
                 className="flex-1 bg-transparent border-none outline-none px-3 text-sm text-slate-700 dark:text-slate-200"
               />
               <button
@@ -205,7 +205,6 @@ export default function ChatBot() {
         </div>
       )}
 
-      {/* Nút bấm nổi (Floating Action Button) */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`group relative p-4 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-110 active:scale-90 ${
@@ -221,7 +220,6 @@ export default function ChatBot() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-5 w-5 bg-blue-500 border-2 border-white"></span>
             </span>
-            {/* Tooltip khi hover */}
             <div className="absolute right-full mr-4 top-1/2 -translate-y-1/2 px-3 py-1 bg-slate-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
               Chat với GoPitch AI
             </div>
