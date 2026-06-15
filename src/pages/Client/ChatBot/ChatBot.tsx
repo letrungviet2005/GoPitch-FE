@@ -179,7 +179,6 @@ export default function ChatBot() {
             )}
           </div>
 
-          {/* Input nhập liệu - Thiết kế hiện đại */}
           <div className="p-4 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 p-2 rounded-2xl border border-transparent focus-within:border-blue-500 focus-within:bg-white dark:focus-within:bg-slate-900 transition-all shadow-inner">
               <input
