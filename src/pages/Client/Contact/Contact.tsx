@@ -36,7 +36,6 @@ const ContactPage: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    // Giả lập gửi API
     setTimeout(() => {
       alert(
         "Thông tin đã được gửi tới Admin! Chúng tôi sẽ liên hệ bạn sớm nhất."
