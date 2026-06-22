@@ -38,7 +38,7 @@ const ContactPage: React.FC = () => {
     setIsSubmitting(true);
     setTimeout(() => {
       alert(
-        "Thông tin đã được gửi tới Admin! Chúng tôi sẽ liên hệ bạn sớm nhất."
+        "Thông tin đã được gửi tới Admin! Chúng tôi sẽ liên hệ bạn sớm nhất.",
       );
       setIsSubmitting(false);
     }, 1500);
@@ -81,7 +81,6 @@ const ContactPage: React.FC = () => {
       </section>
 
       <main className="max-w-7xl mx-auto px-4 -mt-10 pb-20">
-        {/* Step Guide */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           {steps.map((step, idx) => (
             <div
@@ -100,7 +99,6 @@ const ContactPage: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Left: Contact Info */}
           <div className="lg:col-span-4 space-y-6">
             <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
               <h2 className="text-2xl font-bold mb-6 text-slate-800">

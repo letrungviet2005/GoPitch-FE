@@ -14,7 +14,6 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
       >
         « Prev
       </button>
-
       {pages.map((page) => (
         <button
           key={page}
@@ -25,7 +24,6 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
         </button>
       ))}
 
-      {/* Nút Next */}
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
