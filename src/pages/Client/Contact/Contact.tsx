@@ -67,7 +67,6 @@ const ContactPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans antialiased text-slate-900">
-      {/* Hero Section */}
       <section className="bg-indigo-700 py-16 px-4">
         <div className="max-w-5xl mx-auto text-center">
           <h1 className="text-3xl md:text-5xl font-extrabold text-white mb-4">
