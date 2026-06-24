@@ -74,20 +74,17 @@ $radius-md: 16px;
 
     .nameSection {
       margin-left: 32px; flex: 1; 
-      padding-top: 25px; // ĐÃ THÊM: Dịch tên xuống một chút cho cân đối
+      padding-top: 25px; 
       padding-bottom: 12px;
-      
       @media (max-width: 992px) { margin: 20px 0; padding-top: 0; }
-      
       h1 { 
         margin: 0; font-size: 2.25rem; color: $text-main; font-weight: 900; 
         letter-spacing: -0.025em; line-height: 1.1;
       }
-      
       .tags {
         display: flex; gap: 12px; margin-top: 10px;
         @media (max-width: 992px) { justify-content: center; }
-        
+
         .tag {
           font-size: 0.85rem; color: $text-muted; background: #f1f5f9;
           padding: 6px 16px; border-radius: 100px;
