@@ -118,7 +118,6 @@ $radius-md: 16px;
         &:hover { background: #f8fafc; border-color: $primary; color: $primary; }
       }
 
-      // ĐÃ THÊM: Style cho nút Đăng xuất
       .logoutBtn {
         background: #fff1f2; color: #e11d48; border: 1px solid #fda4af;
         &:hover { 
@@ -131,7 +130,6 @@ $radius-md: 16px;
   }
 }
 
-// Giữ lại các class mainGrid, card, statBox, infoList giống như cũ của bạn...
 .mainGrid {
   display: grid; grid-template-columns: 360px 1fr; gap: 32px;
   @media (max-width: 992px) { grid-template-columns: 1fr; }

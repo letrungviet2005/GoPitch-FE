@@ -20,7 +20,6 @@ const Pitch: React.FC = () => {
 
   const pitchesPerPage = 12;
 
-  // 1. Lấy tọa độ người dùng từ Cookie/Hook
   const userCoords = getStoredLocation();
 
   const formatTime = (timeString: string) => {
@@ -29,7 +28,6 @@ const Pitch: React.FC = () => {
     return parts.length >= 2 ? `${parts[0]}:${parts[1]}` : timeString;
   };
 
-  // 2. Xử lý Debounce cho ô tìm kiếm
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
@@ -38,7 +36,6 @@ const Pitch: React.FC = () => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // 3. Fetch dữ liệu và Tính toán khoảng cách
   useEffect(() => {
     const fetchPitches = async () => {
       const token =
@@ -49,7 +46,6 @@ const Pitch: React.FC = () => {
       try {
         setLoading(true);
 
-        // Xây dựng URL tùy theo có tìm kiếm hay không
         let url = `http://localhost:8080/api/v1/clubs?page=${currentPage}&size=${pitchesPerPage}`;
         if (debouncedSearchTerm) {
           url = `http://localhost:8080/api/v1/clubs/search?keyword=${encodeURIComponent(
@@ -69,7 +65,6 @@ const Pitch: React.FC = () => {
         const actualData = data.result ? data : data.data || data;
         let rawPitches = actualData.result || [];
 
-        // --- TÍNH KHOẢNG CÁCH NGAY KHI CÓ DỮ LIỆU ---
         if (userCoords && userCoords.lat && userCoords.lng) {
           rawPitches = rawPitches.map((pitch: any) => {
             // Kiểm tra nếu sân có đủ tọa độ từ BE
@@ -86,7 +81,6 @@ const Pitch: React.FC = () => {
             return pitch;
           });
 
-          // Tùy chọn: Sắp xếp danh sách theo khoảng cách gần nhất
           rawPitches.sort(
             (a: any, b: any) => (a.distance || 999) - (b.distance || 999)
           );
@@ -165,7 +159,6 @@ const Pitch: React.FC = () => {
                     pitch.timeEnd
                   )}`}
                   rating={4.5}
-                  // HIỂN THỊ KHOẢNG CÁCH (Lấy 1 chữ số thập phân)
                   distance={
                     pitch.distance !== undefined
                       ? `${pitch.distance.toFixed(1)} km`
