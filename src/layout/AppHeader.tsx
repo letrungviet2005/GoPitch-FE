@@ -121,8 +121,6 @@ const AppHeader: React.FC = () => {
             </svg>
           </button>
         </div>
-
-        {/* RIGHT SECTION: Actions & User */}
         <div
           className={`${
             isApplicationMenuOpen ? "flex" : "hidden"
@@ -132,10 +130,8 @@ const AppHeader: React.FC = () => {
             <ThemeToggleButton />
             <NotificationDropdown />
 
-            {/* Thanh ngăn cách dọc nhỏ cho đẹp */}
             <div className="hidden sm:block w-px h-6 bg-gray-200 dark:bg-gray-700 mx-1"></div>
 
-            {/* Truyền dữ liệu user vào Dropdown */}
             <UserDropdown user={user} />
           </div>
         </div>
