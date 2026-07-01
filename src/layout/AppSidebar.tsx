@@ -72,7 +72,6 @@ const AppSidebar: React.FC = () => {
     [location.pathname],
   );
 
-  // Logic tự động mở menu khi đường dẫn trùng khớp
   useEffect(() => {
     let submenuMatched = false;
     ["main", "others"].forEach((menuType) => {
