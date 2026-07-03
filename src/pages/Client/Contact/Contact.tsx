@@ -143,12 +143,10 @@ const ContactPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Right: Contact Form */}
           <div className="lg:col-span-8">
             <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 p-8 md:p-10 border border-slate-100">
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Name */}
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700 ml-1 flex items-center">
                       <User className="w-4 h-4 mr-2 text-indigo-500" /> Họ tên
@@ -165,7 +163,6 @@ const ContactPage: React.FC = () => {
                     />
                   </div>
 
-                  {/* Phone */}
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700 ml-1 flex items-center">
                       <Phone className="w-4 h-4 mr-2 text-indigo-500" /> Số điện

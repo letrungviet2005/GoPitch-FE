@@ -40,9 +40,7 @@ export default function App() {
   return (
     <Router>
       <ScrollToTop />
-      <Routes>
-        {/* ================= ADMIN & OWNER ROUTES ================= */}
-        <Route
+      <Routes><Route
           element={<ProtectedRoute allowedRoles={["Admin", "Owner", "User"]} />}
         >
           <Route path="/admin" element={<AppLayout />}>

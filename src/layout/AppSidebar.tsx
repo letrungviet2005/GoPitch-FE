@@ -114,7 +114,6 @@ const AppSidebar: React.FC = () => {
       {items.map((nav, index) => (
         <li key={nav.name}>
           {nav.subItems ? (
-            /* Item có menu con */
             <div>
               <button
                 onClick={() => handleSubmenuToggle(index, menuType)}
@@ -153,7 +152,6 @@ const AppSidebar: React.FC = () => {
                 )}
               </button>
 
-              {/* Dropdown container */}
               {(isExpanded || isHovered || isMobileOpen) && (
                 <div
                   ref={(el) => {
@@ -188,7 +186,6 @@ const AppSidebar: React.FC = () => {
               )}
             </div>
           ) : (
-            /* Item đơn (không có menu con) */
             nav.path && (
               <Link
                 to={nav.path}
@@ -230,7 +227,6 @@ const AppSidebar: React.FC = () => {
       onMouseEnter={() => !isExpanded && setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Logo Placeholder */}
       <div
         className={`py-8 flex items-center ${
           !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
@@ -247,7 +243,6 @@ const AppSidebar: React.FC = () => {
       <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar flex-grow">
         <nav className="mb-6">
           <div className="flex flex-col gap-6">
-            {/* Section: Main Menu */}
             <div>
               <h2
                 className={`mb-4 text-[10px] font-semibold uppercase tracking-wider text-gray-400 flex ${
@@ -265,7 +260,6 @@ const AppSidebar: React.FC = () => {
               {renderMenuItems(navItems, "main")}
             </div>
 
-            {/* Section: Others */}
             <div>
               <h2
                 className={`mb-4 text-[10px] font-semibold uppercase tracking-wider text-gray-400 flex ${
@@ -286,7 +280,6 @@ const AppSidebar: React.FC = () => {
         </nav>
       </div>
 
-      {/* Widget ở dưới cùng */}
       {(isExpanded || isHovered || isMobileOpen) && (
         <div className="pb-8">
           <SidebarWidget />
