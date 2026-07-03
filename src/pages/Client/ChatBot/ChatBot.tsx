@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { MessageCircle, X, Send, Bot, Loader2, Zap } from "lucide-react";
-import axios from "axios";
 import ReactMarkdown from "react-markdown";
-import { useNavigate } from "react-router-dom"; // Import navigate
+import { useNavigate } from "react-router-dom";
 import { getStoredLocation } from "../../../hooks/locationHandler";
+import { chatWithAI } from "../../../services/aiService";
 
 interface Message {
   role: "user" | "ai";
@@ -16,14 +16,13 @@ export default function ChatBot() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "ai",
-      text: "Chào bạn! Mình là **GoPitch AI**. Mình có thể giúp bạn tìm sân gần nhất và nhanh nhất, check giá hoặc đặt sân chỉ trong 1 nốt nhạc. bạn muốn đá sân nào hôm nay?",
+      text: "Chào bạn! Mình là **GoPitch AI**. Mình có thể giúp bạn tìm sân gần nhất, check giá hoặc hướng dẫn đặt sân.",
     },
   ]);
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate(); // Hook điều hướng
+  const navigate = useNavigate();
 
-  // Tự động cuộn xuống cuối
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -34,10 +33,6 @@ export default function ChatBot() {
     if (!input.trim() || loading) return;
 
     const userMsg = input;
-    const token =
-      localStorage.getItem("accessToken") ||
-      sessionStorage.getItem("accessToken");
-
     setMessages((prev) => [...prev, { role: "user", text: userMsg }]);
     setInput("");
     setLoading(true);
@@ -47,29 +42,14 @@ export default function ChatBot() {
     const longitude = userCoords?.lng || 0;
 
     try {
-      const response = await axios.post(
-        "http://localhost:8080/api/v1/ai/chat",
-        { message: userMsg, lat: latitude, lng: longitude },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        },
-      );
-
-      if (response.data && response.data.reply) {
-        setMessages((prev) => [
-          ...prev,
-          { role: "ai", text: response.data.reply },
-        ]);
-      }
-    } catch (error: any) {
+      const reply = await chatWithAI(userMsg, latitude, longitude);
+      setMessages((prev) => [...prev, { role: "ai", text: reply }]);
+    } catch {
       setMessages((prev) => [
         ...prev,
         {
           role: "ai",
-          text: "Xin lỗi bạn bộ não AI đang bị quá tải (429). Bạn đợi 30s rồi hỏi lại nhé!",
+          text: "Xin lỗi, trợ lý AI đang gặp sự cố. Vui lòng thử lại sau.",
         },
       ]);
     } finally {
@@ -79,10 +59,8 @@ export default function ChatBot() {
 
   return (
     <div className="fixed bottom-6 right-6 z-[9999] flex flex-col items-end font-sans">
-      {/* Cửa sổ Chat */}
       {isOpen && (
         <div className="mb-4 w-[380px] md:w-[450px] h-[600px] bg-white dark:bg-slate-900 shadow-2xl rounded-[2rem] border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 duration-500">
-          {/* Header - Gradient cực cháy */}
           <div className="p-5 bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500 text-white flex justify-between items-center shadow-lg">
             <div className="flex items-center gap-3">
               <div className="relative">
@@ -108,7 +86,6 @@ export default function ChatBot() {
             </button>
           </div>
 
-          {/* Nội dung tin nhắn */}
           <div
             ref={scrollRef}
             className="flex-1 overflow-y-auto p-5 space-y-6 bg-[#f8fafc] dark:bg-slate-950/50"
@@ -136,15 +113,13 @@ export default function ChatBot() {
                       <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap">
                         <ReactMarkdown
                           components={{
-                            // Xử lý navigate để không reload trang, không mất Token
-                            a: ({ node, href, ...props }) => {
+                            a: ({ href, ...props }) => {
                               const isInternal = href?.startsWith("/");
                               return (
                                 <span
                                   onClick={() => {
                                     if (isInternal && href) {
-                                      navigate(href); // Chuyển trang mượt mà
-                                      // setIsOpen(false); // Tùy chọn: Đóng chat khi click link
+                                      navigate(href);
                                     } else if (href) {
                                       window.open(href, "_blank");
                                     }
@@ -197,9 +172,6 @@ export default function ChatBot() {
                 <Send size={18} />
               </button>
             </div>
-            <p className="text-[9px] text-center text-slate-400 mt-2">
-              GoPitch AI có thể nhầm lẫn, hãy kiểm tra lại thông tin sân nhé!
-            </p>
           </div>
         </div>
       )}
@@ -213,17 +185,6 @@ export default function ChatBot() {
         }`}
       >
         {isOpen ? <X size={28} /> : <MessageCircle size={28} />}
-        {!isOpen && (
-          <>
-            <span className="absolute -top-1 -right-1 flex h-5 w-5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-5 w-5 bg-blue-500 border-2 border-white"></span>
-            </span>
-            <div className="absolute right-full mr-4 top-1/2 -translate-y-1/2 px-3 py-1 bg-slate-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-              Chat với GoPitch AI
-            </div>
-          </>
-        )}
       </button>
     </div>
   );

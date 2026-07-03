@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
 import {
   MapPin,
   Star,
@@ -12,16 +11,30 @@ import {
   X,
   LayoutGrid,
   CheckCircle2,
+  MessageSquare,
+  Send,
+  Trash2,
 } from "lucide-react";
+import { getClubById, getExtraServicesByClub } from "../../../services/clubService";
+import {
+  createComment,
+  deleteComment,
+  getCommentsByClub,
+} from "../../../services/commentService";
+import type { ClubDetail, CommentResponseDTO } from "../../../types/api";
 
 const DetailPitch = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [club, setClub] = useState<any>(null);
+  const [club, setClub] = useState<ClubDetail | null>(null);
   const [extraServices, setExtraServices] = useState<any[]>([]);
+  const [comments, setComments] = useState<CommentResponseDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAllPhotos, setShowAllPhotos] = useState(false);
+  const [commentContent, setCommentContent] = useState("");
+  const [commentRate, setCommentRate] = useState(5);
+  const [submittingComment, setSubmittingComment] = useState(false);
 
   const formatTime = (timeString: string) => {
     if (!timeString) return "";
@@ -29,37 +42,64 @@ const DetailPitch = () => {
     return parts.length >= 2 ? `${parts[0]}:${parts[1]}` : timeString;
   };
 
+  const loadComments = async (clubId: number) => {
+    try {
+      setComments(await getCommentsByClub(clubId));
+    } catch (error) {
+      console.error("Không thể tải bình luận:", error);
+    }
+  };
+
   useEffect(() => {
     const fetchAllData = async () => {
+      if (!id) return;
       try {
         setLoading(true);
-        const token =
-          localStorage.getItem("accessToken") ||
-          sessionStorage.getItem("accessToken");
-        const headers = { Authorization: `Bearer ${token}` };
-
-        const [clubRes, serviceRes] = await Promise.all([
-          axios.get(`http://localhost:8080/api/v1/clubs/${id}`, { headers }),
-          axios.get(`http://localhost:8080/api/v1/extra-services/club/${id}`, {
-            headers,
-          }),
-        ]);
-
-        setClub(clubRes.data.result || clubRes.data);
-        setExtraServices(serviceRes.data || []);
+        const clubData = await getClubById(id);
+        setClub(clubData);
+        setExtraServices(await getExtraServicesByClub(id));
+        await loadComments(Number(id));
       } catch (error) {
         console.error("Lỗi hệ thống:", error);
       } finally {
         setLoading(false);
       }
     };
-    if (id) fetchAllData();
+    fetchAllData();
   }, [id]);
 
-  // Khóa cuộn trang khi mở modal ảnh
   useEffect(() => {
     document.body.style.overflow = showAllPhotos ? "hidden" : "unset";
   }, [showAllPhotos]);
+
+  const handleSubmitComment = async () => {
+    if (!id || !commentContent.trim()) return;
+    try {
+      setSubmittingComment(true);
+      await createComment({
+        content: commentContent.trim(),
+        rate: commentRate,
+        clubId: Number(id),
+      });
+      setCommentContent("");
+      setCommentRate(5);
+      await loadComments(Number(id));
+    } catch (error) {
+      console.error("Không thể gửi bình luận:", error);
+      alert("Vui lòng đăng nhập để bình luận.");
+    } finally {
+      setSubmittingComment(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: number) => {
+    try {
+      await deleteComment(commentId);
+      if (id) await loadComments(Number(id));
+    } catch (error) {
+      console.error("Không thể xóa bình luận:", error);
+    }
+  };
 
   if (loading)
     return (
@@ -80,13 +120,19 @@ const DetailPitch = () => {
 
   const allImages = [
     club.imageAvatar,
-    ...(club.imageClubs?.map((img: any) => img.imageUrl) || []),
+    ...(club.imageClubs?.map((img) => img.imageUrl) || []),
   ].filter(Boolean);
 
+  const averageRating =
+    comments.length > 0
+      ? (
+          comments.reduce((sum, c) => sum + c.rate, 0) / comments.length
+        ).toFixed(1)
+      : club.rating || "5.0";
+
   return (
-    <div className="bg-slate-50 min-h-screen">
+    <div className="bg-slate-50 min-h-screen font-inter">
       <div className="max-w-7xl mx-auto px-4 py-6">
-        {/* --- HEADER --- */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
           <div>
             <h1 className="text-3xl font-black text-slate-900 uppercase italic mb-2">
@@ -94,8 +140,8 @@ const DetailPitch = () => {
             </h1>
             <div className="flex flex-wrap items-center gap-4 text-sm font-semibold">
               <span className="flex items-center gap-1 text-amber-500">
-                <Star size={16} fill="currentColor" /> {club.rating || "5.0"}{" "}
-                (100+ đánh giá)
+                <Star size={16} fill="currentColor" /> {averageRating} (
+                {comments.length} đánh giá)
               </span>
               <span className="flex items-center gap-1 text-slate-500 underline decoration-slate-300">
                 <MapPin size={16} /> {club.address}
@@ -112,9 +158,7 @@ const DetailPitch = () => {
           </div>
         </div>
 
-        {/* --- GALLERY GRID (Airbnb Style) --- */}
         <section className="relative h-[300px] md:h-[450px] grid grid-cols-4 grid-rows-2 gap-3 rounded-[2rem] overflow-hidden mb-10 shadow-xl group">
-          {/* Ảnh chính lớn */}
           <div className="col-span-4 md:col-span-2 row-span-2 relative overflow-hidden">
             <img
               src={allImages[0]}
@@ -122,7 +166,6 @@ const DetailPitch = () => {
               alt="Main"
             />
           </div>
-          {/* 4 ảnh nhỏ bên phải (ẩn trên mobile để tối ưu) */}
           {allImages.slice(1, 5).map((url, idx) => (
             <div key={idx} className="hidden md:block relative overflow-hidden">
               <img
@@ -132,7 +175,6 @@ const DetailPitch = () => {
               />
             </div>
           ))}
-          {/* Nút Xem tất cả ảnh */}
           <button
             onClick={() => setShowAllPhotos(true)}
             className="absolute bottom-6 right-6 bg-white/90 backdrop-blur px-5 py-2.5 rounded-xl text-sm font-black shadow-lg flex items-center gap-2 hover:bg-white transition-all active:scale-95"
@@ -142,9 +184,7 @@ const DetailPitch = () => {
         </section>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          {/* --- CỘT TRÁI (THÔNG TIN CHÍNH) --- */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Giới thiệu */}
             <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
               <h2 className="text-xl font-black text-slate-800 mb-4 uppercase italic">
                 Giới thiệu sân
@@ -152,8 +192,7 @@ const DetailPitch = () => {
               <p className="text-slate-600 leading-relaxed mb-8">
                 Chào mừng bạn đến với{" "}
                 <strong className="text-blue-600">{club.name}</strong>. Sân được
-                đầu tư cơ sở vật chất hiện đại, mặt sàn đạt chuẩn quốc tế, hệ
-                thống chiếu sáng LED chống lóa đạt chuẩn thi đấu.
+                đầu tư cơ sở vật chất hiện đại, mặt sân đạt chuẩn quốc tế.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="flex items-center gap-4 p-4 bg-blue-50/50 rounded-2xl">
@@ -165,7 +204,8 @@ const DetailPitch = () => {
                       Giờ hoạt động
                     </p>
                     <p className="font-bold text-blue-900">
-                      {formatTime(club.timeStart)} - {formatTime(club.timeEnd)}
+                      {formatTime(club.timeStart || "")} -{" "}
+                      {formatTime(club.timeEnd || "")}
                     </p>
                   </div>
                 </div>
@@ -185,15 +225,11 @@ const DetailPitch = () => {
               </div>
             </div>
 
-            {/* Bảng giá */}
             <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
               <div className="p-8 border-b border-slate-50 flex justify-between items-center">
                 <h2 className="text-xl font-black text-slate-800 uppercase italic">
                   Bảng giá thuê sân
                 </h2>
-                <span className="text-xs bg-slate-100 px-3 py-1 rounded-full font-bold text-slate-500">
-                  Giá theo giờ
-                </span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
@@ -205,7 +241,7 @@ const DetailPitch = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
-                    {club.pitchPrices?.map((price: any, idx: number) => (
+                    {club.pitchPrices?.map((price, idx) => (
                       <tr
                         key={idx}
                         className="hover:bg-slate-50/50 transition-colors"
@@ -227,7 +263,6 @@ const DetailPitch = () => {
               </div>
             </div>
 
-            {/* Dịch vụ phụ */}
             <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
               <h2 className="text-xl font-black text-slate-800 mb-6 uppercase italic">
                 Dịch vụ & Tiện ích
@@ -257,15 +292,82 @@ const DetailPitch = () => {
                 )}
               </div>
             </div>
+
+            <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
+              <h2 className="text-xl font-black text-slate-800 mb-6 uppercase italic flex items-center gap-2">
+                <MessageSquare size={22} /> Đánh giá từ người chơi
+              </h2>
+
+              <div className="mb-6 p-4 bg-slate-50 rounded-2xl space-y-3">
+                <textarea
+                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm"
+                  rows={3}
+                  placeholder="Chia sẻ trải nghiệm của bạn..."
+                  value={commentContent}
+                  onChange={(e) => setCommentContent(e.target.value)}
+                />
+                <div className="flex items-center justify-between gap-4">
+                  <select
+                    className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                    value={commentRate}
+                    onChange={(e) => setCommentRate(Number(e.target.value))}
+                  >
+                    {[5, 4, 3, 2, 1].map((rate) => (
+                      <option key={rate} value={rate}>
+                        {rate} sao
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={handleSubmitComment}
+                    disabled={submittingComment || !commentContent.trim()}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold disabled:opacity-50"
+                  >
+                    <Send size={16} /> Gửi đánh giá
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {comments.length === 0 ? (
+                  <p className="text-slate-400 italic">
+                    Chưa có đánh giá nào cho CLB này.
+                  </p>
+                ) : (
+                  comments.map((comment) => (
+                    <div
+                      key={comment.id}
+                      className="border border-slate-100 rounded-2xl p-4"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="font-bold text-slate-800">
+                            {comment.userName}
+                          </p>
+                          <p className="text-amber-500 text-sm">
+                            {"★".repeat(comment.rate)}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => handleDeleteComment(comment.id)}
+                          className="text-slate-400 hover:text-red-500"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                      <p className="mt-2 text-slate-600 text-sm">
+                        {comment.content}
+                      </p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
           </div>
 
-          {/* --- CỘT PHẢI (SIDEBAR STICKY) --- */}
           <aside className="lg:col-span-1">
             <div className="sticky top-24 space-y-6">
               <div className="bg-white p-8 rounded-[2.5rem] shadow-2xl shadow-blue-900/10 border border-blue-50 overflow-hidden relative">
-                {/* Trang trí góc */}
-                <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-bl-full -mr-8 -mt-8"></div>
-
                 <div className="mb-6">
                   <p className="text-xs font-black text-slate-400 uppercase tracking-widest">
                     Giá chỉ từ
@@ -293,8 +395,8 @@ const DetailPitch = () => {
                     tiền nếu hủy trước 24h
                   </li>
                   <li className="flex items-center gap-3 text-sm font-bold text-slate-600">
-                    <CheckCircle2 className="text-emerald-500" size={18} /> Hỗ
-                    trợ thanh toán VNPay/MoMo
+                    <CheckCircle2 className="text-emerald-500" size={18} /> Thanh
+                    toán qua PayOS
                   </li>
                 </ul>
 
@@ -302,7 +404,7 @@ const DetailPitch = () => {
                   <iframe
                     title="map"
                     src={`https://maps.google.com/maps?q=${encodeURIComponent(
-                      club.address
+                      club.address,
                     )}&output=embed`}
                     className="w-full h-full grayscale hover:grayscale-0 transition-all duration-700"
                   ></iframe>
@@ -313,7 +415,6 @@ const DetailPitch = () => {
         </div>
       </div>
 
-      {/* --- MODAL XEM TẤT CẢ ẢNH --- */}
       {showAllPhotos && (
         <div className="fixed inset-0 z-[999] bg-white overflow-y-auto animate-in slide-in-from-bottom duration-300">
           <div className="sticky top-0 bg-white/80 backdrop-blur-md px-6 py-4 flex justify-between items-center border-b z-10">
@@ -326,7 +427,7 @@ const DetailPitch = () => {
             <h3 className="font-black text-slate-800 uppercase italic">
               Thư viện ảnh ({allImages.length})
             </h3>
-            <div className="w-10"></div> {/* Spacer */}
+            <div className="w-10"></div>
           </div>
           <div className="max-w-4xl mx-auto p-6 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

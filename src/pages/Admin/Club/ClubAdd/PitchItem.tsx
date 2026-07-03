@@ -7,6 +7,18 @@ import {
   ChevronRight,
   AlertCircle,
 } from "lucide-react";
+import type { Pitch, Price } from "./types";
+
+interface PitchItemProps {
+  pitch: Pitch;
+  prices: Price[];
+  onPitchNameChange: (name: string) => void;
+  onRemovePitch: () => void;
+  onAddPrice: () => void;
+  onUpdatePrice: (id: string, field: keyof Price, val: string | number) => void;
+  onRemovePrice: (id: string) => void;
+}
+
 // --- TYPES ---
 const TimePickerDropdown = ({
   label,

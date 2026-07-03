@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import axios from "axios";
 import {
   CheckCircle2,
   XCircle,
@@ -11,6 +10,11 @@ import {
   Calendar as CalendarIcon,
 } from "lucide-react";
 import classNames from "classnames/bind";
+import {
+  confirmPayment,
+  clearPendingBooking,
+} from "../../../../services/paymentService";
+import type { BookingSlot } from "../../../../types/api";
 import styles from "./PaymentResult.module.scss";
 
 const cx = classNames.bind(styles);
@@ -19,12 +23,15 @@ const PaymentResult: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [confirmError, setConfirmError] = useState("");
 
   const status = searchParams.get("status");
-  const orderCode = searchParams.get("orderCode");
+  const orderCode =
+    searchParams.get("orderCode") ||
+    localStorage.getItem("pending_orderCode") ||
+    "";
   const hasCalledAPI = useRef(false);
 
-  // Lấy dữ liệu từ cache để hiển thị giao diện
   const totalAmount = localStorage.getItem("pending_totalAmount");
 
   useEffect(() => {
@@ -34,32 +41,25 @@ const PaymentResult: React.FC = () => {
       if (status === "PAID" && orderCode) {
         hasCalledAPI.current = true;
         try {
-          const token =
-            localStorage.getItem("accessToken") ||
-            sessionStorage.getItem("accessToken");
           const slots = JSON.parse(
-            localStorage.getItem("pending_slots") || "[]"
-          );
+            localStorage.getItem("pending_slots") || "[]",
+          ) as BookingSlot[];
           const clubId = localStorage.getItem("pending_clubId");
           const totalAmountCache = localStorage.getItem("pending_totalAmount");
 
-          await axios.post(
-            "http://localhost:8080/api/v1/payment/confirm-payment",
-            {
-              orderCode,
-              slots,
-              clubId,
-              totalAmount: totalAmountCache,
-            },
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
+          await confirmPayment({
+            orderCode,
+            slots,
+            clubId: clubId || "",
+            totalAmount: totalAmountCache || "0",
+          });
 
-          // Chỉ xóa cache khi đã gọi API thành công
-          localStorage.removeItem("pending_slots");
-          localStorage.removeItem("pending_clubId");
-          localStorage.removeItem("pending_totalAmount");
+          clearPendingBooking();
         } catch (e) {
           console.error("Lỗi xác thực:", e);
+          setConfirmError(
+            "Thanh toán thành công nhưng xác nhận đặt sân thất bại. Vui lòng kiểm tra lịch sử đặt sân.",
+          );
         } finally {
           setLoading(false);
         }
@@ -82,7 +82,7 @@ const PaymentResult: React.FC = () => {
     );
   }
 
-  const isSuccess = status === "PAID";
+  const isSuccess = status === "PAID" && !confirmError;
 
   return (
     <div className={cx("result-container")}>
@@ -95,9 +95,10 @@ const PaymentResult: React.FC = () => {
           {isSuccess ? "Thanh toán thành công!" : "Thanh toán thất bại"}
         </h1>
         <p className={cx("description")}>
-          {isSuccess
-            ? "Cảm ơn bạn đã tin tưởng GoPitch. Sân của bạn đã được hệ thống giữ chỗ thành công."
-            : "Giao dịch đã bị hủy hoặc gặp lỗi trong quá trình xử lý. Vui lòng thử lại hoặc liên hệ hỗ trợ."}
+          {confirmError ||
+            (isSuccess
+              ? "Cảm ơn bạn đã tin tưởng GoPitch. Sân của bạn đã được hệ thống giữ chỗ thành công."
+              : "Giao dịch đã bị hủy hoặc gặp lỗi trong quá trình xử lý. Vui lòng thử lại hoặc liên hệ hỗ trợ.")}
         </p>
 
         <div className={cx("order-details")}>
@@ -129,6 +130,14 @@ const PaymentResult: React.FC = () => {
           {!isSuccess && (
             <button className={cx("btn-retry")} onClick={() => navigate(-1)}>
               <RefreshCcw size={18} /> Thử lại
+            </button>
+          )}
+          {isSuccess && (
+            <button
+              className={cx("btn-retry")}
+              onClick={() => navigate("/booking-history")}
+            >
+              <Receipt size={18} /> Xem lịch sử
             </button>
           )}
           <button className={cx("btn-home")} onClick={() => navigate("/")}>

@@ -21,10 +21,10 @@ const Booked = () => {
 
   const totalPrice = bookings.reduce((sum, b) => sum + b.price, 0);
 
-  const [transferImage, setTransferImage] = useState(null);
+  const [transferImage, setTransferImage] = useState<string | null>(null);
 
-  const handleUpload = (e) => {
-    const file = e.target.files[0];
+  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
       setTransferImage(URL.createObjectURL(file));
     }

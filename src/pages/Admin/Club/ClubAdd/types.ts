@@ -14,8 +14,10 @@ export interface Pitch {
 }
 
 export interface ExtraService {
+  id: string;
   name: string;
   price: number;
+  unit: string;
 }
 
 export interface ClubImage {

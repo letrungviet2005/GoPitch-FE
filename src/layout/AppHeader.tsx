@@ -132,7 +132,7 @@ const AppHeader: React.FC = () => {
 
             <div className="hidden sm:block w-px h-6 bg-gray-200 dark:bg-gray-700 mx-1"></div>
 
-            <UserDropdown user={user} />
+            <UserDropdown />
           </div>
         </div>
       </div>

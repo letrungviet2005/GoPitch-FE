@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import classNames from "classnames/bind";
-import axios from "axios";
 import {
   User,
   Phone,
@@ -13,6 +12,12 @@ import {
   Loader2,
   ShieldCheck,
 } from "lucide-react";
+import { getMyProfile } from "../../../services/userService";
+import {
+  createPaymentLink,
+  storePendingBooking,
+} from "../../../services/paymentService";
+import type { BookingSlot, UserProfile } from "../../../types/api";
 import styles from "./Payment.module.scss";
 
 const cx = classNames.bind(styles);
@@ -21,10 +26,15 @@ const Payment: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // 1. Lấy dữ liệu từ trang Booking chuyển sang
-  const { selectedSlots, totalAmount, clubId, clubName } = location.state || {};
+  const { selectedSlots, totalAmount, clubId, clubName } =
+    (location.state as {
+      selectedSlots?: BookingSlot[];
+      totalAmount?: number;
+      clubId?: number;
+      clubName?: string;
+    }) || {};
 
-  const [userInfo, setUserInfo] = useState<any>(null);
+  const [userInfo, setUserInfo] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
 
@@ -40,18 +50,11 @@ const Payment: React.FC = () => {
           localStorage.getItem("accessToken") ||
           sessionStorage.getItem("accessToken");
         if (!token) {
-          navigate("/login");
+          navigate("/signin");
           return;
         }
 
-        const response = await axios.get(
-          "http://localhost:8080/api/v1/users/me",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-
-        setUserInfo(response.data.result || response.data);
+        setUserInfo(await getMyProfile());
       } catch (error) {
         console.error("Lỗi lấy thông tin user:", error);
       } finally {
@@ -62,35 +65,23 @@ const Payment: React.FC = () => {
     fetchUserData();
   }, [selectedSlots, navigate]);
 
-  // 2. XỬ LÝ THANH TOÁN QUA PAYOS
   const handlePayOSPayment = async () => {
     try {
       setLoading(true);
-      const token =
-        localStorage.getItem("accessToken") ||
-        sessionStorage.getItem("accessToken");
 
-      // --- BỔ SUNG ĐẦY ĐỦ Ở ĐÂY ---
-      // Lưu toàn bộ thông tin cần thiết vào cache trước khi nhảy sang trang PayOS
-      localStorage.setItem("pending_slots", JSON.stringify(selectedSlots));
-      localStorage.setItem("pending_clubId", clubId.toString());
-      localStorage.setItem("pending_totalAmount", totalAmount.toString());
-      // ----------------------------
+      const paymentData = await createPaymentLink(totalAmount!);
 
-      const response = await axios.post(
-        "http://localhost:8080/api/v1/payment/create-payment-link",
-        {
-          amount: totalAmount,
-          clubName: clubName,
-          clubId: clubId,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      storePendingBooking({
+        slots: selectedSlots!,
+        clubId: clubId!,
+        totalAmount: totalAmount!,
+        orderCode: paymentData.orderCode,
+      });
 
-      if (response.data.checkoutUrl) {
-        // Khi dòng này chạy, trình duyệt sẽ rời khỏi trang web của ông
-        // nên mọi state trong React sẽ bị mất. Đó là lý do ta phải lưu vào localStorage.
-        window.location.href = response.data.checkoutUrl;
+      if (paymentData.checkoutUrl) {
+        window.location.href = paymentData.checkoutUrl;
+      } else {
+        alert("Không nhận được link thanh toán từ PayOS.");
       }
     } catch (error) {
       console.error("Lỗi:", error);
@@ -120,7 +111,6 @@ const Payment: React.FC = () => {
         </header>
 
         <div className={cx("content-grid")}>
-          {/* CỘT TRÁI: THÔNG TIN TỔNG QUAN */}
           <div className={cx("info-section")}>
             <section className={cx("card")}>
               <div className={cx("card-header")}>
@@ -129,7 +119,7 @@ const Payment: React.FC = () => {
               </div>
               <div className={cx("club-name")}>{clubName}</div>
               <div className={cx("slots-list")}>
-                {selectedSlots?.map((slot: any, idx: number) => (
+                {selectedSlots?.map((slot, idx) => (
                   <div key={idx} className={cx("slot-item")}>
                     <div className={cx("slot-info")}>
                       <span className={cx("date")}>{slot.date}</span>
@@ -170,7 +160,6 @@ const Payment: React.FC = () => {
             </section>
           </div>
 
-          {/* CỘT PHẢI: THANH TOÁN QUA PAYOS */}
           <div className={cx("action-section")}>
             <section className={cx("card", "payment-card")}>
               <div className={cx("total-section")}>
@@ -190,8 +179,7 @@ const Payment: React.FC = () => {
                     <ShieldCheck size={14} /> Thanh toán an toàn qua QR Code
                   </li>
                   <li>
-                    <ShieldCheck size={14} /> Xác nhận tức thì (Instant
-                    Confirmation)
+                    <ShieldCheck size={14} /> Xác nhận tức thì
                   </li>
                   <li>
                     <ShieldCheck size={14} /> Hỗ trợ tất cả ngân hàng Việt Nam

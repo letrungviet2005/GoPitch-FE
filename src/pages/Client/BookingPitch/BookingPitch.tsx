@@ -1,10 +1,22 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import classNames from "classnames/bind";
-import axios from "axios";
+import { getClubById } from "../../../services/clubService";
+import {
+  getCalendarsByDate,
+  isSlotBooked,
+} from "../../../services/calendarService";
+import type {
+  BookingSlot,
+  ClubDetail,
+  Pitch,
+  PitchPrice,
+} from "../../../types/api";
 import styles from "./BookingPitch.module.scss";
 
 const cx = classNames.bind(styles);
+
+type PitchWithCalendars = Pitch & { calendars: Awaited<ReturnType<typeof getCalendarsByDate>> };
 
 const getTodayLocal = () => {
   const today = new Date();
@@ -16,13 +28,12 @@ const BookingPitch = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [pitches, setPitches] = useState([]);
-  const [clubInfo, setClubInfo] = useState(null);
+  const [pitches, setPitches] = useState<PitchWithCalendars[]>([]);
+  const [clubInfo, setClubInfo] = useState<ClubDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(getTodayLocal());
-  const [selectedSlots, setSelectedSlots] = useState([]);
+  const [selectedSlots, setSelectedSlots] = useState<BookingSlot[]>([]);
 
-  // --- 1. TẠO DANH SÁCH 7 NGÀY ĐỂ CHỌN NHANH ---
   const dateOptions = useMemo(() => {
     const options = [];
     for (let i = 0; i < 7; i++) {
@@ -52,21 +63,19 @@ const BookingPitch = () => {
     return arr;
   }, []);
 
-  // --- 2. LOGIC KIỂM TRA GIỜ ĐÃ QUA ---
-  const isPastSlot = (date, time) => {
+  const isPastSlot = (date: string, time: string) => {
     const today = getTodayLocal();
     if (date < today) return true;
     if (date > today) return false;
 
     const now = new Date();
     const [slotHour] = time.split(":").map(Number);
-    // Khóa các giờ nhỏ hơn hoặc bằng giờ hiện tại
     return slotHour <= now.getHours();
   };
 
-  const getPriceForTime = (pitchId, time) => {
+  const getPriceForTime = (pitchId: number, time: string) => {
     if (!clubInfo?.pitchPrices) return 0;
-    const match = clubInfo.pitchPrices.find((p) => {
+    const match = clubInfo.pitchPrices.find((p: PitchPrice) => {
       const isSamePitch = String(p.pitchId) === String(pitchId);
       const start = p.timeStart.substring(0, 5);
       const end = p.timeEnd.substring(0, 5);
@@ -79,33 +88,18 @@ const BookingPitch = () => {
     if (!selectedDate || !id) return;
     try {
       setLoading(true);
-      const token =
-        localStorage.getItem("accessToken") ||
-        sessionStorage.getItem("accessToken");
-      const headers = { Authorization: `Bearer ${token}` };
-
-      const clubRes = await axios.get(
-        `http://localhost:8080/api/v1/clubs/${id}`,
-        { headers }
-      );
-      const club = clubRes.data.result || clubRes.data;
+      const club = await getClubById(id);
       setClubInfo(club);
 
       const pitchData = await Promise.all(
         (club.pitches || []).map(async (p) => {
           try {
-            const calRes = await axios.get(
-              `http://localhost:8080/api/v1/calendars`,
-              {
-                headers,
-                params: { pitchId: p.id, date: selectedDate },
-              }
-            );
-            return { ...p, calendars: calRes.data || [] };
-          } catch (e) {
+            const calendars = await getCalendarsByDate(p.id, selectedDate);
+            return { ...p, calendars };
+          } catch {
             return { ...p, calendars: [] };
           }
-        })
+        }),
       );
       setPitches(pitchData);
     } catch (err) {
@@ -119,16 +113,13 @@ const BookingPitch = () => {
     fetchBookingData();
   }, [fetchBookingData]);
 
-  const handleCellClick = (pitch, time) => {
+  const handleCellClick = (pitch: PitchWithCalendars, time: string) => {
     if (isPastSlot(selectedDate, time)) return;
 
     const price = getPriceForTime(pitch.id, time);
     if (price <= 0) return;
 
-    const isBooked = pitch.calendars.some(
-      (c) => c.startTime?.split("T")[1]?.substring(0, 5) === time
-    );
-    if (isBooked) return;
+    if (isSlotBooked(pitch.calendars, time)) return;
 
     const slotKey = `${pitch.id}-${time}`;
     const exists = selectedSlots.some((s) => s.slotKey === slotKey);
@@ -150,7 +141,6 @@ const BookingPitch = () => {
     }
   };
 
-  // --- FIX LỖI: TÍNH TỔNG TIỀN ---
   const totalAmount = selectedSlots.reduce((sum, s) => sum + s.price, 0);
 
   if (loading && !clubInfo)
@@ -168,7 +158,6 @@ const BookingPitch = () => {
         </button>
       </header>
 
-      {/* BỘ CHỌN NGÀY DẠNG TAB */}
       <div className={cx("date-selector-container")}>
         <div className={cx("date-tabs")}>
           {dateOptions.map((opt) => (
@@ -204,11 +193,9 @@ const BookingPitch = () => {
               <tr key={p.id}>
                 <td className={cx("sticky-col")}>{p.name}</td>
                 {timeLabels.map((t) => {
-                  const isBooked = p.calendars.some(
-                    (c) => c.startTime?.split("T")[1]?.substring(0, 5) === t
-                  );
+                  const booked = isSlotBooked(p.calendars, t);
                   const isSelected = selectedSlots.some(
-                    (s) => s.slotKey === `${p.id}-${t}`
+                    (s) => s.slotKey === `${p.id}-${t}`,
                   );
                   const price = getPriceForTime(p.id, t);
                   const isPast = isPastSlot(selectedDate, t);
@@ -218,19 +205,19 @@ const BookingPitch = () => {
                     <td
                       key={t}
                       className={cx("cell", {
-                        booked: isBooked,
+                        booked,
                         selected: isSelected,
                         past: isPast,
-                        "no-price": (hasNoPrice || isPast) && !isBooked,
+                        "no-price": (hasNoPrice || isPast) && !booked,
                       })}
                       onClick={() =>
-                        !isBooked &&
+                        !booked &&
                         !isPast &&
                         !hasNoPrice &&
                         handleCellClick(p, t)
                       }
                     >
-                      {isBooked ? (
+                      {booked ? (
                         <span className={cx("icon")}>✕</span>
                       ) : isPast ? (
                         <span className={cx("disabled-text")}>--</span>

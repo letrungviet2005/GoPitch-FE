@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Map, LayoutGrid, PhoneCall, Home, ChevronDown } from "lucide-react";
+import { Map, LayoutGrid, PhoneCall, Home, ChevronDown, LucideIcon } from "lucide-react";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -23,9 +23,17 @@ const Header = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const isActive = (path) => location.pathname === path;
+  const isActive = (path: string) => location.pathname === path;
 
-  const NavItem = ({ path, icon: Icon, label }) => (
+  const NavItem = ({
+    path,
+    icon: Icon,
+    label,
+  }: {
+    path: string;
+    icon: LucideIcon;
+    label: string;
+  }) => (
     <button
       onClick={() => navigate(path)}
       className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all duration-200 ${

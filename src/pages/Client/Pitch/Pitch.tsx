@@ -152,7 +152,6 @@ const Pitch: React.FC = () => {
               >
                 <Pitchs
                   image={pitch.imageAvatar || "https://via.placeholder.com/300"}
-                  avatar={pitch.imageAvatar}
                   name={pitch.name}
                   address={pitch.address}
                   hours={`${formatTime(pitch.timeStart)} - ${formatTime(

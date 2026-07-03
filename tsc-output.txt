@@ -1,0 +1,2 @@
+﻿src/pages/Client/Payment/PaymentResult/PaymentResult.tsx(16,8): error TS2307: Cannot find module '../../../services/paymentService' or its corresponding type declarations.
+src/pages/Client/Payment/PaymentResult/PaymentResult.tsx(17,34): error TS2307: Cannot find module '../../../types/api' or its corresponding type declarations.

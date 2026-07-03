@@ -2,6 +2,11 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import classNames from "classnames/bind";
 import { ChevronLeft, Eye, EyeOff, Lock, Mail } from "lucide-react";
+import {
+  login,
+  normalizeRole,
+  storeAuthSession,
+} from "../../services/authService";
 import styles from "./SignIn.module.scss";
 
 const cx = classNames.bind(styles);
@@ -45,52 +50,21 @@ export default function SignInForm() {
     setIsLoading(true);
 
     try {
-      const API_URL = "http://localhost:8080/api/v1";
-      const response = await fetch(`${API_URL}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: email.trim(),
-          password: password,
-        }),
-      });
+      const result = await login(email, password);
 
-      let result: any = {};
-      try {
-        result = await response.json();
-      } catch {
-        // If response is not JSON, keep result as empty object
-      }
-
-      if (response.ok && result.accessToken) {
-        localStorage.clear();
-        sessionStorage.clear();
-        const storage = rememberMe ? localStorage : sessionStorage;
-
-        storage.setItem("accessToken", result.accessToken);
-        if (result.user) {
-          storage.setItem("userId", result.user.id?.toString() || "");
-          storage.setItem("userName", result.user.name || "");
-          storage.setItem("userRole", result.user.role?.name || "User");
-        }
-
+      if (result.accessToken) {
+        storeAuthSession(result, rememberMe);
         setSuccess(`Chào mừng trở lại, ${result.user?.name || "user"}!`);
 
         setTimeout(() => {
-          const role = result.user?.role?.name;
+          const role = normalizeRole(result.user?.role?.name);
           navigate(role === "Admin" || role === "Owner" ? "/admin/" : "/");
           window.location.reload();
         }, 800);
         return;
       }
 
-      if (response.status === 401) {
-        setGeneralError("Invalid email or password.");
-      } else {
-        setGeneralError(
-          result.message || "An error occurred, please try again.",
-        );
-      }
+      setGeneralError("An error occurred, please try again.");
     } catch (err) {
       setGeneralError("Could not connect to the server.");
     } finally {

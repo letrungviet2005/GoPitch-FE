@@ -12,6 +12,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import styles from "./SignUp.module.scss";
+import config from "../../config/config";
 
 const cx = classNames.bind(styles);
 
@@ -47,8 +48,7 @@ export default function SignUpForm() {
     setIsLoading(true);
 
     try {
-      const API_URL = "http://localhost:8080/api/v1";
-      const response = await fetch(`${API_URL}/auth/register`, {
+      const response = await fetch(`${config}auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
