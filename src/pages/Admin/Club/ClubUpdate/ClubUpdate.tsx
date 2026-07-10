@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
 import { Loader2, Trash2, AlertTriangle } from "lucide-react";
 import PageMeta from "../../../../components/common/PageMeta";
 
@@ -10,8 +9,11 @@ import BasicInfo from "./BasicInfo";
 import PitchPriceConfig from "./PitchPriceConfig";
 import OperatingHours from "./OperatingHours";
 import MediaSection from "./MediaSection";
-
-const API_BASE = "http://localhost:8080/api/v1";
+import {
+  deleteOwnerClub,
+  getOwnerClub,
+  updateOwnerClub,
+} from "../../../../services/adminService";
 
 export default function ClubUpdate() {
   const { id } = useParams();
@@ -37,13 +39,6 @@ export default function ClubUpdate() {
     extraServices: [],
   });
 
-  const getAuthToken = () => {
-    return (
-      localStorage.getItem("accessToken") ||
-      sessionStorage.getItem("accessToken")
-    );
-  };
-
   // Helper để format HH:mm:ss -> HH:mm cho input time
   const formatTimeForInput = (t: string) => {
     if (!t) return "00:00";
@@ -53,14 +48,8 @@ export default function ClubUpdate() {
   useEffect(() => {
     const fetchClub = async () => {
       try {
-        const token = getAuthToken();
-        if (!token) return;
-
-        const res = await axios.get(`${API_BASE}/owner/clubs/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        const data = res.data.result || res.data;
+        if (!id) return;
+        const data = await getOwnerClub(id);
 
         // Cập nhật state và format lại toàn bộ thời gian
         setFormData({
@@ -95,13 +84,10 @@ export default function ClubUpdate() {
   const handleSubmit = async () => {
     setSaving(true);
     try {
-      const token = getAuthToken();
       // Loại bỏ các trường không cần thiết trước khi gửi payload
       const { comments, ...payload } = formData;
 
-      await axios.put(`${API_BASE}/owner/clubs/${id}`, payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await updateOwnerClub(id!, payload);
       alert("Cập nhật thành công!");
       navigate("/admin/clubs");
     } catch (error) {
@@ -122,10 +108,7 @@ export default function ClubUpdate() {
 
     setSaving(true);
     try {
-      const token = getAuthToken();
-      await axios.delete(`${API_BASE}/owner/clubs/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await deleteOwnerClub(id!);
       alert("Đã xóa câu lạc bộ thành công.");
       navigate("/admin/clubs");
     } catch (error) {

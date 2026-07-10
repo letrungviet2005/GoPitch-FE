@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Search, MapPin, Loader2, CheckCircle2, XCircle } from "lucide-react";
+import { getOwnerClubs } from "../../../services/adminService";
 
 interface Club {
   id: number;
@@ -44,20 +45,8 @@ export default function PredictionDashboard() {
     try {
       setLoadingClub(true);
 
-      const token =
-        localStorage.getItem("accessToken") ||
-        sessionStorage.getItem("accessToken");
-
-      const response = await axios.get(
-        "http://localhost:8080/api/v1/owner/clubs",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-
-      setClubs(response.data.result || []);
+      const response = await getOwnerClubs({ size: 100 });
+      setClubs(response.result || []);
     } catch (err) {
       console.error(err);
     } finally {

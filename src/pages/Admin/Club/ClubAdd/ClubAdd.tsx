@@ -26,6 +26,7 @@ import {
   ExtraService as ExtraServiceType,
   ClubImage,
 } from "./types";
+import { createOwnerClub } from "../../../../services/adminService";
 
 const generateId = () => Math.random().toString(36).substr(2, 9);
 const CLOUDINARY_UPLOAD_PRESET = "ml_default";
@@ -120,11 +121,13 @@ export default function ClubAdd() {
       const payload = {
         ...formData,
         pitches: pitches.map((p) => ({
-          ...p,
+          name: p.name,
+          active: p.active,
           pitchPrices: prices
             .filter((pr) => pr.pitchId === p.id)
             .map((pr) => ({
-              ...pr,
+              name: pr.name,
+              price: Number(pr.price),
               timeStart:
                 pr.timeStart.length === 5 ? `${pr.timeStart}:00` : pr.timeStart,
               timeEnd:
@@ -134,12 +137,7 @@ export default function ClubAdd() {
         imageClubs,
         extraServices,
       };
-      const token =
-        localStorage.getItem("accessToken") ||
-        sessionStorage.getItem("accessToken");
-      await axios.post("http://localhost:8080/api/v1/owner/clubs", payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await createOwnerClub(payload);
       navigate("/admin/clubs");
     } catch (error: any) {
       setErrorMsg(error.response?.data?.message || "Lỗi lưu dữ liệu!");
@@ -353,7 +351,7 @@ export default function ClubAdd() {
           {/* CỘT PHẢI: CẤU HÌNH SÂN & DỊCH VỤ */}
           <div className="lg:col-span-7 space-y-8">
             <div className="bg-white p-8 rounded-[2.5rem] shadow-xl shadow-gray-100 border border-gray-50">
-              <div className="flex justify-between items-center mb-8">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
                 <h2 className="font-black flex items-center gap-2 text-gray-800 uppercase text-sm tracking-tighter">
                   <div className="p-2 bg-green-50 text-green-600 rounded-xl">
                     <CheckCircle2 size={20} />
@@ -372,7 +370,7 @@ export default function ClubAdd() {
                       },
                     ])
                   }
-                  className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-2xl text-xs font-black shadow-lg shadow-green-100 transition-all active:scale-95 flex items-center gap-2"
+                  className="w-full sm:w-auto shrink-0 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-2xl text-xs font-black shadow-lg shadow-green-100 transition-all active:scale-95 flex items-center justify-center gap-2 whitespace-nowrap"
                 >
                   <Plus size={16} /> THÊM SÂN MỚI
                 </button>

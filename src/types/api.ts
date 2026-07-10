@@ -35,6 +35,9 @@ export interface BillResponseDTO {
   id: number;
   price: number;
   createdAt: string;
+  orderCode?: number;
+  status?: boolean;
+  customerName?: string;
   clubName: string;
   clubAddress: string;
   slots: PlacedDTO[];

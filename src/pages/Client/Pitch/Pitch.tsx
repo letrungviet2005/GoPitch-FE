@@ -46,7 +46,7 @@ const Pitch: React.FC = () => {
       try {
         setLoading(true);
 
-        let url = `http://localhost:8080/api/v1/clubs?page=${currentPage}&size=${pitchesPerPage}`;
+        let url = `http://localhost:8080/api/v1/clubs?page=${currentPage - 1}&size=${pitchesPerPage}`;
         if (debouncedSearchTerm) {
           url = `http://localhost:8080/api/v1/clubs/search?keyword=${encodeURIComponent(
             debouncedSearchTerm
