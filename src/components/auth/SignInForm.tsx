@@ -18,7 +18,6 @@ export default function SignInForm() {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
 
-  //State error
   const [fieldErrors, setFieldErrors] = useState({ email: "", password: "" });
   const [generalError, setGeneralError] = useState("");
   const [success, setSuccess] = useState("");
