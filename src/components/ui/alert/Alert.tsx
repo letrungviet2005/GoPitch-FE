@@ -1,7 +1,7 @@
 import { Link } from "react-router";
 
 interface AlertProps {
-  variant: "success" | "error" | "warning" | "info"; // Alert type
+  variant: "success" | "error" | "warning" | "info"; 
   title: string; 
   message: string; 
   showLink?: boolean; 
