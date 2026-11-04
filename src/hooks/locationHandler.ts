@@ -47,7 +47,7 @@ export const getStoredLocation = (): UserCoords | null => {
     if (savedLocation) {
         try {
             return JSON.parse(savedLocation);
-        } catch (e) {
+        } catch {
             return null;
         }
     }

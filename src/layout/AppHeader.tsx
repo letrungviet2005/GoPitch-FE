@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom"; // Sửa lại từ "react-router" nếu bạn dùng v6
-import axios from "axios";
+import apiClient from "../services/apiClient";
 import { useSidebar } from "../context/SidebarContext";
 import { ThemeToggleButton } from "../components/common/ThemeToggleButton";
 import NotificationDropdown from "../components/header/NotificationDropdown";
@@ -16,7 +16,7 @@ interface UserProfile {
 
 const AppHeader: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
-  const [user, setUser] = useState<UserProfile | null>(null);
+  const [, setUser] = useState<UserProfile | null>(null);
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
 
   // 1. Fetch thông tin User khi Header mount
@@ -28,7 +28,7 @@ const AppHeader: React.FC = () => {
           sessionStorage.getItem("accessToken");
         if (!token) return;
 
-        const res = await axios.get("http://localhost:8080/api/v1/users/me", {
+        const res = await apiClient.get("/users/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUser(res.data);

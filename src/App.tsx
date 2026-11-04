@@ -1,3 +1,5 @@
+import Management from "./pages/Admin/Management";
+import CalendarManager from "./pages/Admin/CalendarManager";
 import { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { handleAndStoreLocation } from "./hooks/locationHandler";
@@ -8,7 +10,6 @@ import { ScrollToTop } from "./components/common/ScrollToTop";
 
 import Home from "./pages/Admin/Dashboard/Home";
 import Club from "./pages/Admin/Club/Club";
-import Pitches from "./pages/Admin/Pitch/Pitch";
 import Revenue from "./pages/Admin/Revenue/Revenue";
 import ClubAdd from "./pages/Admin/Club/ClubAdd/ClubAdd";
 import ClubUpdate from "./pages/Admin/Club/ClubUpdate/ClubUpdate";
@@ -41,12 +42,14 @@ export default function App() {
     <Router>
       <ScrollToTop />
       <Routes><Route
-          element={<ProtectedRoute allowedRoles={["Admin", "Owner", "User"]} />}
+          element={<ProtectedRoute allowedRoles={["Admin", "Owner"]} />}
         >
           <Route path="/admin" element={<AppLayout />}>
             <Route index element={<Home />} />
             <Route path="clubs" element={<Club />} />
-            <Route path="pitch" element={<Pitches />} />
+            <Route path="pitch" element={<CalendarManager />} />
+            <Route path="calendar" element={<CalendarManager />} />
+            <Route element={<ProtectedRoute allowedRoles={["Admin"]} />}><Route path="users" element={<Management key="users" kind="users" />} /><Route path="roles" element={<Management key="roles" kind="roles" />} /><Route path="permissions" element={<Management key="permissions" kind="permissions" />} /></Route>
             <Route path="revenue" element={<Revenue />} />
             <Route path="clubs/add" element={<ClubAdd />} />
             <Route path="clubs/details/:id" element={<ClubUpdate />} />

@@ -116,7 +116,9 @@ const BookingPitch = () => {
   const handleCellClick = (pitch: PitchWithCalendars, time: string) => {
     if (isPastSlot(selectedDate, time)) return;
 
-    const price = getPriceForTime(pitch.id, time);
+    const calendar = pitch.calendars.find(c => c.startTime.split("T")[1]?.substring(0,5) === time);
+    if (!calendar || !calendar.active) return;
+    const price = calendar.price;
     if (price <= 0) return;
 
     if (isSlotBooked(pitch.calendars, time)) return;
@@ -131,6 +133,7 @@ const BookingPitch = () => {
         ...selectedSlots,
         {
           slotKey,
+          calendarId: calendar.id,
           pitchId: pitch.id,
           pitchName: pitch.name,
           time,
@@ -199,7 +202,7 @@ const BookingPitch = () => {
                   );
                   const price = getPriceForTime(p.id, t);
                   const isPast = isPastSlot(selectedDate, t);
-                  const hasNoPrice = price <= 0;
+                  const hasNoPrice = price <= 0 || !p.calendars.some(c => c.startTime.split("T")[1]?.substring(0,5) === t);
 
                   return (
                     <td

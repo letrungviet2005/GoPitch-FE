@@ -83,6 +83,9 @@ export interface Pitch {
 }
 
 export interface ClubDetail {
+  latitude?: number;
+  longitude?: number;
+  distance?: number;
   id: number;
   name: string;
   address: string;
@@ -97,6 +100,7 @@ export interface ClubDetail {
 }
 
 export interface BookingSlot {
+  calendarId?: number;
   slotKey: string;
   pitchId: number;
   pitchName: string;

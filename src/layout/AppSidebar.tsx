@@ -7,10 +7,8 @@ import {
   GridIcon,
   HorizontaLDots,
   PieChartIcon,
-  TableIcon,
   UserCircleIcon,
   CalenderIcon, // Giữ lại icon lịch cho quản lý sân
-  PlugInIcon, // Dùng cho cấu hình/others
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 import SidebarWidget from "./SidebarWidget";
@@ -40,22 +38,21 @@ const navItems: NavItem[] = [
   },
   {
     icon: <PieChartIcon />,
-    name: "Dự đoán tỉ lệ sân",
+    name: "Dự báo lượt đặt",
     path: "/admin/predict",
   },
 ];
 
-const othersItems: NavItem[] = [
-  {
-    icon: <PlugInIcon />,
-    name: "Cài đặt hệ thống",
-    path: "/admin/settings",
-  },
-];
+const othersItems: NavItem[] = [];
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const location = useLocation();
+  const isAdmin=(localStorage.getItem("userRole")||sessionStorage.getItem("userRole"))?.toLowerCase()==="admin";
+  const visibleItems=[...navItems,{icon:<CalenderIcon/>,name:"Lịch sân",path:"/admin/calendar"},...(isAdmin?[
+    {icon:<UserCircleIcon/>,name:"Tài khoản",path:"/admin/users"},
+    {icon:<UserCircleIcon/>,name:"Vai trò",path:"/admin/roles"},
+    {icon:<UserCircleIcon/>,name:"Quyền",path:"/admin/permissions"}]:[])];
 
   const [openSubmenu, setOpenSubmenu] = useState<{
     type: "main" | "others";
@@ -257,7 +254,7 @@ const AppSidebar: React.FC = () => {
                   <HorizontaLDots className="w-5 h-5" />
                 )}
               </h2>
-              {renderMenuItems(navItems, "main")}
+              {renderMenuItems(visibleItems, "main")}
             </div>
 
             <div>

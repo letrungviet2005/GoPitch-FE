@@ -13,8 +13,8 @@ const CountryMap: React.FC<CountryMapProps> = ({ mapColor }) => {
       markerStyle={{
         initial: {
           fill: "#465FFF",
-          r: 4, 
-        } as any, 
+ 
+        }, 
       }}
       markersSelectable={true}
       markers={[

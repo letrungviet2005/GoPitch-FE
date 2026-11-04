@@ -21,7 +21,7 @@ describe('GoPitch - Login Test Cases', () => {
 
     // Kiểm tra đã lưu token
     cy.window().then((win) => {
-      expect(win.localStorage.getItem('accessToken')).to.exist
+      expect(win.localStorage.getItem('accessToken')).not.to.equal(null)
     })
   })
 
@@ -115,7 +115,7 @@ describe('GoPitch - Login Test Cases', () => {
     cy.reload()
 
     cy.window().then((win) => {
-      expect(win.localStorage.getItem('accessToken')).to.exist
+      expect(win.localStorage.getItem('accessToken')).not.to.equal(null)
     })
   })
 

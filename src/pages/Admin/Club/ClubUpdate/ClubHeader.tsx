@@ -9,7 +9,6 @@ interface ClubHeaderProps {
 }
 
 export default function ClubHeader({
-  title,
   saving,
   onSave,
   onBack,

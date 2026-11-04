@@ -1,3 +1,4 @@
+import type { EditorClub } from "../types/clubEditor";
 import apiClient from "./apiClient";
 import type { BillResponseDTO } from "../types/api";
 
@@ -216,7 +217,7 @@ export async function createOwnerClub(payload: unknown) {
 }
 
 export async function getOwnerClub(id: string | number) {
-  const { data } = await apiClient.get<OwnerClub | any>(`/owner/clubs/${id}`);
+  const { data } = await apiClient.get<EditorClub>(`/owner/clubs/${id}`);
   return data;
 }
 

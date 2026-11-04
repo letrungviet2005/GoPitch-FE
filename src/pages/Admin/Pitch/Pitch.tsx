@@ -7,7 +7,6 @@ import {
   Lock,
   Unlock,
   Filter,
-  MoreHorizontal,
   LayoutGrid,
   List,
   CheckCircle2,

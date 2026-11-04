@@ -13,9 +13,9 @@ const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dc5dzscp5/image/upload";
 
 interface MediaSectionProps {
   avatar: string;
-  images: any[];
+  images: {imageUrl:string}[];
   onAvatarChange: (url: string) => void;
-  onImagesChange: (newImages: any[]) => void;
+  onImagesChange: (newImages: {imageUrl:string}[]) => void;
 }
 
 export default function MediaSection({

@@ -64,7 +64,7 @@ export default function SignInForm() {
       }
 
       setGeneralError("An error occurred, please try again.");
-    } catch (err) {
+    } catch {
       setGeneralError("Could not connect to the server.");
     } finally {
       setIsLoading(false);

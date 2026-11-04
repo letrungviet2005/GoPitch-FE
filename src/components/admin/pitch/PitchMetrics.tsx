@@ -1,4 +1,4 @@
-export default function PitchMetrics({ pitches }: { pitches: any[] }) {
+export default function PitchMetrics({ pitches }: { pitches: {status:string}[] }) {
   const metrics = [
     {
       label: "Doanh thu hôm nay",
@@ -8,7 +8,7 @@ export default function PitchMetrics({ pitches }: { pitches: any[] }) {
     },
     {
       label: "Sân đang hoạt động",
-      value: `${pitches.filter((p: any) => p.status === "occupied").length}/${
+      value: `${pitches.filter((p) => p.status === "occupied").length}/${
         pitches.length
       }`,
       color: "text-blue-600",

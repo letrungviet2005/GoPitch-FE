@@ -21,8 +21,7 @@ export function storeAuthSession(
   data: LoginResponse,
   rememberMe: boolean,
 ): void {
-  localStorage.clear();
-  sessionStorage.clear();
+  clearAuthSession();
 
   const storage = rememberMe ? localStorage : sessionStorage;
   storage.setItem("accessToken", data.accessToken);

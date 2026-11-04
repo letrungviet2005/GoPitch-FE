@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Trash2, X, Plus, Tag, Package, ChevronDown } from "lucide-react";
+import { X, Plus, Tag, Package, ChevronDown } from "lucide-react";
 
 // --- TYPES ---
 export interface ExtraService {
@@ -12,7 +12,7 @@ export interface ExtraService {
 interface ExtraServiceProps {
   services: ExtraService[];
   onAddService: () => void;
-  onUpdateService: (id: string, field: keyof ExtraService, value: any) => void;
+  onUpdateService: (id: string, field: keyof ExtraService, value: string | number) => void;
   onRemoveService: (id: string) => void;
 }
 

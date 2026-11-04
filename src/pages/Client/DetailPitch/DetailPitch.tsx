@@ -28,7 +28,7 @@ const DetailPitch = () => {
   const navigate = useNavigate();
 
   const [club, setClub] = useState<ClubDetail | null>(null);
-  const [extraServices, setExtraServices] = useState<any[]>([]);
+  const [extraServices, setExtraServices] = useState<{id:number;name:string;price:number;description?:string;unit?:string}[]>([]);
   const [comments, setComments] = useState<CommentResponseDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAllPhotos, setShowAllPhotos] = useState(false);

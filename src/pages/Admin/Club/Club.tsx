@@ -1,3 +1,4 @@
+import {errorMessage} from "../../../services/apiClient";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -20,6 +21,7 @@ import {
 
 export default function Club() {
   const navigate = useNavigate();
+  const [error,setError]=useState("");
   const [clubs, setClubs] = useState<OwnerClub[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -35,14 +37,14 @@ export default function Club() {
       setLoading(true);
       try {
         const data = await getOwnerClubs({
-          page: pageNumber - 1,
+          page: pageNumber,
           size: meta.pageSize,
           name: searchTerm || undefined,
         });
         setClubs(data.result || []);
-        setMeta(data.meta || meta);
-      } catch (error: any) {
-        console.error("Cannot load owner clubs:", error.response?.data || error.message);
+        if(data.meta) setMeta(data.meta);
+      } catch (error) {
+        setError(errorMessage(error));
       } finally {
         setLoading(false);
       }
@@ -52,7 +54,7 @@ export default function Club() {
 
   useEffect(() => {
     fetchClubs(1);
-  }, []);
+  }, [fetchClubs]);
 
   const handleSearchKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") fetchClubs(1);
@@ -60,6 +62,7 @@ export default function Club() {
 
   return (
     <div className="p-4 md:p-8 bg-slate-50 dark:bg-slate-950 min-h-screen">
+      {error && <p role="alert">{error}</p>}
       <PageMeta title="Quan ly Club | GoPitch" />
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">

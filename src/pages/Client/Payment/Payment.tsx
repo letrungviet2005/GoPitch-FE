@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import classNames from "classnames/bind";
 import {
@@ -18,6 +18,7 @@ import {
   storePendingBooking,
 } from "../../../services/paymentService";
 import type { BookingSlot, UserProfile } from "../../../types/api";
+import apiClient, {errorMessage} from "../../../services/apiClient";
 import styles from "./Payment.module.scss";
 
 const cx = classNames.bind(styles);
@@ -26,7 +27,7 @@ const Payment: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { selectedSlots, totalAmount, clubId, clubName } =
+  const { selectedSlots, clubId, clubName } =
     (location.state as {
       selectedSlots?: BookingSlot[];
       totalAmount?: number;
@@ -34,8 +35,12 @@ const Payment: React.FC = () => {
       clubName?: string;
     }) || {};
 
+  const [totalAmount,setTotalAmount]=useState<number|null>(null);
+  const [quoteError,setQuoteError]=useState("");
   const [userInfo, setUserInfo] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(false);
+  const sending=useRef(false);
+  const requestKey=useRef(crypto.randomUUID());
   const [pageLoading, setPageLoading] = useState(true);
 
   useEffect(() => {
@@ -54,22 +59,29 @@ const Payment: React.FC = () => {
           return;
         }
 
-        setUserInfo(await getMyProfile());
+        const [profile,quote]=await Promise.all([getMyProfile(),apiClient.post("/payment/quote",{clubId:Number(clubId),calendarIds:selectedSlots.map(s=>s.calendarId)})]);
+        setUserInfo(profile);setTotalAmount(quote.data.amount);
+        const cacheKey="checkout-key:"+profile.id+":"+selectedSlots.map(s=>s.calendarId).sort().join(",");
+        const cached=sessionStorage.getItem(cacheKey);
+        if(cached){try{const value=JSON.parse(cached);if(value.until>Date.now())requestKey.current=value.key;}catch{/* corrupted cache ignored */}}
+        sessionStorage.setItem(cacheKey,JSON.stringify({key:requestKey.current,until:Date.now()+15*60*1000}));
       } catch (error) {
-        console.error("Lỗi lấy thông tin user:", error);
+        setQuoteError(errorMessage(error));
       } finally {
         setPageLoading(false);
       }
     };
 
     fetchUserData();
-  }, [selectedSlots, navigate]);
+  }, [selectedSlots, navigate, clubId]);
 
   const handlePayOSPayment = async () => {
+    if(sending.current || totalAmount===null || quoteError) return;
+    sending.current=true;
     try {
       setLoading(true);
 
-      const paymentData = await createPaymentLink(totalAmount!);
+      const paymentData = await createPaymentLink(clubId!,selectedSlots!,requestKey.current);
 
       storePendingBooking({
         slots: selectedSlots!,
@@ -84,9 +96,9 @@ const Payment: React.FC = () => {
         alert("Không nhận được link thanh toán từ PayOS.");
       }
     } catch (error) {
-      console.error("Lỗi:", error);
-      alert("Có lỗi xảy ra khi khởi tạo thanh toán!");
+      setQuoteError(errorMessage(error));
     } finally {
+      sending.current=false;
       setLoading(false);
     }
   };
@@ -110,6 +122,7 @@ const Payment: React.FC = () => {
           <p>Sử dụng cổng thanh toán an toàn PayOS</p>
         </header>
 
+        {quoteError && <p role="alert">{quoteError}</p>}
         <div className={cx("content-grid")}>
           <div className={cx("info-section")}>
             <section className={cx("card")}>
@@ -189,7 +202,7 @@ const Payment: React.FC = () => {
 
               <button
                 className={cx("confirm-btn", "payos-btn")}
-                disabled={loading}
+                disabled={loading||totalAmount===null||!!quoteError}
                 onClick={handlePayOSPayment}
               >
                 {loading ? (

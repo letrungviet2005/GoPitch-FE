@@ -1,6 +1,6 @@
 import { Navigate, Outlet } from "react-router";
 
-const AdminGuard = () => {
+export const AdminGuard = () => {
   const token =
     localStorage.getItem("accessToken") ||
     sessionStorage.getItem("accessToken");

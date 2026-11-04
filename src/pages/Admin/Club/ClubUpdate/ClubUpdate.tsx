@@ -1,3 +1,4 @@
+import type { EditorClub } from "../../../../types/clubEditor";
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Loader2, Trash2, AlertTriangle } from "lucide-react";
@@ -22,7 +23,7 @@ export default function ClubUpdate() {
   const [saving, setSaving] = useState(false);
 
   // Khởi tạo state chuẩn cho Form
-  const [formData, setFormData] = useState<any>({
+  const [formData, setFormData] = useState<EditorClub>({
     name: "",
     description: "",
     address: "",
@@ -57,7 +58,7 @@ export default function ClubUpdate() {
           timeStart: formatTimeForInput(data.timeStart),
           timeEnd: formatTimeForInput(data.timeEnd),
           pitches: data.pitches || [],
-          pitchPrices: (data.pitchPrices || []).map((p: any) => ({
+          pitchPrices: (data.pitchPrices || []).map((p) => ({
             ...p,
             timeStart: formatTimeForInput(p.timeStart),
             timeEnd: formatTimeForInput(p.timeEnd),
@@ -74,10 +75,10 @@ export default function ClubUpdate() {
     };
     fetchClub();
   }, [id]);
-  console.log("Dữ liệu form hiện tại:", formData);
 
-  const handleChange = (field: string, value: any) => {
-    setFormData((prev: any) => ({ ...prev, [field]: value }));
+
+  const handleChange = (field: string, value: EditorClub[keyof EditorClub]) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   // --- LOGIC LƯU CẬP NHẬT ---
@@ -85,7 +86,7 @@ export default function ClubUpdate() {
     setSaving(true);
     try {
       // Loại bỏ các trường không cần thiết trước khi gửi payload
-      const { comments, ...payload } = formData;
+      const payload = { ...formData }; delete payload.comments;
 
       await updateOwnerClub(id!, payload);
       alert("Cập nhật thành công!");
@@ -101,7 +102,7 @@ export default function ClubUpdate() {
   // --- LOGIC XÓA CLUB ---
   const handleDeleteClub = async () => {
     const isConfirmed = window.confirm(
-      "CẢNH BÁO NGUY HIỂM: Bạn có chắc chắn muốn xóa hoàn toàn câu lạc bộ này? Hành động này sẽ xóa sạch tất cả sân con và khung giá liên quan. Không thể hoàn tác!"
+      "Ngừng nhận đặt mới tại CLB này? Lịch sử booking và hóa đơn vẫn được giữ."
     );
 
     if (!isConfirmed) return;
@@ -109,7 +110,7 @@ export default function ClubUpdate() {
     setSaving(true);
     try {
       await deleteOwnerClub(id!);
-      alert("Đã xóa câu lạc bộ thành công.");
+      alert("Đã ngừng hoạt động câu lạc bộ thành công.");
       navigate("/admin/clubs");
     } catch (error) {
       console.error("Lỗi khi xóa:", error);
@@ -204,8 +205,7 @@ export default function ClubUpdate() {
               </h3>
             </div>
             <p className="text-[11px] text-slate-500 mb-6 leading-relaxed">
-              Một khi đã xóa, bạn sẽ không thể khôi phục lại dữ liệu sân bóng
-              này. Mọi lịch sử và thông tin sẽ bị xóa bỏ.
+              Ngừng hoạt động sẽ chặn đặt mới. Lịch sử sân, booking và hóa đơn được bảo toàn.
             </p>
             <button
               type="button"
@@ -213,7 +213,7 @@ export default function ClubUpdate() {
               onClick={handleDeleteClub}
               className="w-full flex items-center justify-center gap-2 bg-white hover:bg-red-600 text-red-600 hover:text-white border-2 border-red-100 hover:border-red-600 py-3 rounded-2xl text-xs font-black transition-all disabled:opacity-50"
             >
-              <Trash2 size={16} /> XÓA CÂU LẠC BỘ
+              <Trash2 size={16} /> NGỪNG HOẠT ĐỘNG CLB
             </button>
           </div>
         </div>

@@ -1,3 +1,5 @@
+import apiClient from "../../../services/apiClient";
+import type {ClubDetail} from "../../../types/api";
 import React, { useEffect, useState } from "react";
 import {
   MapContainer,
@@ -46,21 +48,15 @@ const MapCenterUpdater = ({
 
 const ClubMap: React.FC = () => {
   const navigate = useNavigate();
-  const [clubs, setClubs] = useState<any[]>([]);
+  const [clubs, setClubs] = useState<ClubDetail[]>([]);
   const userCoords = getStoredLocation();
 
   useEffect(() => {
     const fetchClubs = async () => {
-      const token =
-        localStorage.getItem("accessToken") ||
-        sessionStorage.getItem("accessToken");
       try {
-        const res = await fetch("http://localhost:8080/api/v1/clubs?size=100", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
+        const {data}=await apiClient.get("/clubs",{params:{size:100,active:true}});
         const list = data.result || [];
-        setClubs(list.filter((c: any) => c.latitude && c.longitude));
+        setClubs(list.filter((c: ClubDetail) => c.latitude && c.longitude));
       } catch (err) {
         console.error("Lỗi fetch Map:", err);
       }

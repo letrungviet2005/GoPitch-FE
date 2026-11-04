@@ -1,4 +1,4 @@
-export default function LivePitchStatus({ pitches }: { pitches: any[] }) {
+export default function LivePitchStatus({ pitches }: { pitches: {id:number;name:string;status:string;remainingMinutes?:number}[] }) {
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-white/5">
       <h3 className="mb-6 text-lg font-bold text-gray-800 dark:text-white">
@@ -26,7 +26,7 @@ export default function LivePitchStatus({ pitches }: { pitches: any[] }) {
             <span className="text-lg font-extrabold text-gray-800 dark:text-white">
               {pitch.name}
             </span>
-            {pitch.remainingMinutes > 0 && (
+            {(pitch.remainingMinutes ?? 0) > 0 && (
               <span className="mt-2 text-[10px] font-medium text-orange-500">
                 Còn {pitch.remainingMinutes} phút
               </span>

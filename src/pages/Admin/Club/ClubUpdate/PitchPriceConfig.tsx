@@ -1,3 +1,4 @@
+import type {EditorPitch, EditorPrice} from "../../../../types/clubEditor";
 import React from "react";
 import {
   Trash2,
@@ -15,10 +16,10 @@ const TIME_OPTIONS = Array.from({ length: 48 }, (_, i) => {
 });
 
 interface PitchPriceConfigProps {
-  prices: any[];
-  pitches: any[];
-  onPricesChange: (newPrices: any[]) => void;
-  onPitchesChange: (newPitches: any[]) => void;
+  prices: EditorPrice[];
+  pitches: EditorPitch[];
+  onPricesChange: (newPrices: EditorPrice[]) => void;
+  onPitchesChange: (newPitches: EditorPitch[]) => void;
   openTime: string;
   closeTime: string;
 }
@@ -31,13 +32,13 @@ export default function PitchPriceConfig({
   openTime,
   closeTime,
 }: PitchPriceConfigProps) {
-  const updatePriceValue = (priceIndex: number, field: string, value: any) => {
+  const updatePriceValue = (priceIndex: number, field: string, value: string | number) => {
     const newPrices = [...prices];
     newPrices[priceIndex] = { ...newPrices[priceIndex], [field]: value };
     onPricesChange(newPrices);
   };
 
-  const addPriceForPitch = (pitchId: any) => {
+  const addPriceForPitch = (pitchId: number | string) => {
     onPricesChange([
       ...prices,
       {
@@ -59,7 +60,7 @@ export default function PitchPriceConfig({
     }
   };
 
-  const updatePitchName = (pitchId: any, newName: string) => {
+  const updatePitchName = (pitchId: number | string, newName: string) => {
     onPitchesChange(
       pitches.map((p) =>
         String(p.id) === String(pitchId) ? { ...p, name: newName } : p
@@ -67,7 +68,7 @@ export default function PitchPriceConfig({
     );
   };
 
-  const TimePickerDropdown = ({ label, value, colorClass, onChange }: any) => {
+  const TimePickerDropdown = ({ label, value, colorClass, onChange }: {label:string;value:string;colorClass:string;onChange:(v:string)=>void}) => {
     // CHUẨN HÓA: Ép value về HH:mm:00 để khớp với option value
     const safeValue = value?.length === 5 ? `${value}:00` : value;
 
@@ -178,7 +179,7 @@ export default function PitchPriceConfig({
                       label="Bắt đầu"
                       value={pp.timeStart}
                       colorClass="text-blue-600"
-                      onChange={(v: any) =>
+                      onChange={(v: string) =>
                         updatePriceValue(pp.originalIdx, "timeStart", v)
                       }
                     />
@@ -187,7 +188,7 @@ export default function PitchPriceConfig({
                       label="Kết thúc"
                       value={pp.timeEnd}
                       colorClass="text-orange-600"
-                      onChange={(v: any) =>
+                      onChange={(v: string) =>
                         updatePriceValue(pp.originalIdx, "timeEnd", v)
                       }
                     />

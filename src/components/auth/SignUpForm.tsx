@@ -66,7 +66,7 @@ export default function SignUpForm() {
       } else {
         setError(result.message || "Đăng ký thất bại, vui lòng thử lại.");
       }
-    } catch (err) {
+    } catch {
       setError("Lỗi kết nối đến máy chủ.");
     } finally {
       setIsLoading(false);

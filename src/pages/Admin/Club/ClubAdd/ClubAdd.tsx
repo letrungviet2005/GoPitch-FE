@@ -1,3 +1,4 @@
+import {errorMessage} from "../../../../services/apiClient";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -66,7 +67,7 @@ export default function ClubAdd() {
     try {
       const res = await axios.post(CLOUDINARY_URL, data);
       return res.data.secure_url;
-    } catch (err) {
+    } catch {
       return null;
     }
   };
@@ -139,8 +140,8 @@ export default function ClubAdd() {
       };
       await createOwnerClub(payload);
       navigate("/admin/clubs");
-    } catch (error: any) {
-      setErrorMsg(error.response?.data?.message || "Lỗi lưu dữ liệu!");
+    } catch (error) {
+      setErrorMsg(errorMessage(error));
     } finally {
       setLoading(false);
     }

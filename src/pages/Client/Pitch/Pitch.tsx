@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useMemo } from "react";
+import apiClient,{errorMessage} from "../../../services/apiClient";
+import type {ClubDetail} from "../../../types/api";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import classNames from "classnames/bind";
 import style from "./css/Pitch.module.scss";
@@ -12,9 +14,10 @@ const cx = classNames.bind(style);
 const Pitch: React.FC = () => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
+  const [error,setError]=useState("");
   const [loading, setLoading] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
-  const [pitches, setPitches] = useState<any[]>([]);
+  const [pitches, setPitches] = useState<ClubDetail[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
@@ -22,7 +25,7 @@ const Pitch: React.FC = () => {
 
   const userCoords = getStoredLocation();
 
-  const formatTime = (timeString: string) => {
+  const formatTime = (timeString?: string) => {
     if (!timeString) return "";
     const parts = timeString.split(":");
     return parts.length >= 2 ? `${parts[0]}:${parts[1]}` : timeString;
@@ -44,29 +47,14 @@ const Pitch: React.FC = () => {
       if (!token) return;
 
       try {
-        setLoading(true);
+        setLoading(true);setError("");
 
-        let url = `http://localhost:8080/api/v1/clubs?page=${currentPage - 1}&size=${pitchesPerPage}`;
-        if (debouncedSearchTerm) {
-          url = `http://localhost:8080/api/v1/clubs/search?keyword=${encodeURIComponent(
-            debouncedSearchTerm
-          )}&page=${currentPage - 1}&size=${pitchesPerPage}`;
-        }
-
-        const response = await fetch(url, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        const data = await response.json();
-        console.log("Fetched pitches data:", data);
+        const {data} = await apiClient.get(debouncedSearchTerm?"/clubs/search":"/clubs",{params:{page:currentPage,size:pitchesPerPage,keyword:debouncedSearchTerm||undefined,active:true}});
         const actualData = data.result ? data : data.data || data;
         let rawPitches = actualData.result || [];
 
         if (userCoords && userCoords.lat && userCoords.lng) {
-          rawPitches = rawPitches.map((pitch: any) => {
+          rawPitches = rawPitches.map((pitch: ClubDetail) => {
             // Kiểm tra nếu sân có đủ tọa độ từ BE
             if (pitch.latitude && pitch.longitude) {
               const dist = calculateDistance(
@@ -82,7 +70,7 @@ const Pitch: React.FC = () => {
           });
 
           rawPitches.sort(
-            (a: any, b: any) => (a.distance || 999) - (b.distance || 999)
+            (a: ClubDetail, b: ClubDetail) => (a.distance || 999) - (b.distance || 999)
           );
         }
 
@@ -91,7 +79,7 @@ const Pitch: React.FC = () => {
           setTotalPages(actualData.meta.pages || 1);
         }
       } catch (error) {
-        console.error("Error fetching pitches:", error);
+        setError(errorMessage(error));
       } finally {
         setLoading(false);
       }
@@ -107,6 +95,7 @@ const Pitch: React.FC = () => {
 
   return (
     <div className={cx("container")}>
+      {error && <p role="alert">{error}</p>}
       {/* Search Bar */}
       <div className={cx("searchBar")}>
         <input
