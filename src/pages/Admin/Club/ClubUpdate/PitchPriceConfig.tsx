@@ -109,6 +109,18 @@ export default function PitchPriceConfig({
         </h2>
       </div>
 
+      <button
+        type="button"
+        className="bg-green-600 text-white px-5 py-2.5 rounded-2xl text-xs font-black"
+        onClick={() => {
+          // BE uses Long IDs; negative IDs identify unsaved pitches and their prices.
+          const id = Math.min(-Date.now(), ...pitches.map(p => Number(p.id) || 0)) - 1;
+          onPitchesChange([...pitches, { id, name: "Sân mới", active: true }]);
+        }}
+      >
+        <Plus size={16} /> THÊM SÂN MỚI
+      </button>
+
       {pitches.map((pitch) => {
         const pitchPrices = prices
           .map((p, idx) => ({ ...p, originalIdx: idx }))
@@ -136,6 +148,17 @@ export default function PitchPriceConfig({
                 className="bg-white text-blue-600 border-2 border-blue-100 px-5 py-2.5 rounded-2xl text-xs font-black hover:bg-blue-600 hover:text-white transition-all"
               >
                 <Plus size={16} /> THÊM GIÁ
+              </button>
+              <button
+                type="button"
+                className="text-red-600 px-4 py-2 rounded-xl border border-red-200"
+                onClick={() => {
+                  if (!window.confirm("Xóa sân này sẽ xóa toàn bộ bảng giá của sân khỏi biểu mẫu. Khi lưu, sân cũ sẽ ngừng hoạt động và lịch sử đặt sân vẫn được giữ. Tiếp tục?")) return;
+                  onPitchesChange(pitches.filter(p => String(p.id) !== String(pitch.id)));
+                  onPricesChange(prices.filter(p => String(p.pitchId) !== String(pitch.id)));
+                }}
+              >
+                <Trash2 size={16} /> XÓA SÂN
               </button>
             </div>
 
@@ -195,6 +218,7 @@ export default function PitchPriceConfig({
                   </div>
                   <div className="lg:col-span-1 flex justify-end">
                     <button
+                      type="button"
                       onClick={() => removePrice(pp.originalIdx)}
                       className="p-3 text-slate-300 hover:text-red-500"
                     >

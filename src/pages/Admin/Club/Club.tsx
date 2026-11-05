@@ -181,10 +181,18 @@ export default function Club() {
                     </td>
                     <td className="px-6 py-5">
                       <div className="flex items-center justify-end gap-2">
-                        <button className="p-2 text-slate-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-500/10 rounded-xl transition border border-slate-100 dark:border-slate-800 shadow-sm">
+                        <button
+                          type="button"
+                          aria-label="Xem chi tiết CLB"
+                          onClick={(e) => { e.stopPropagation(); navigate(`/admin/clubs/details/${club.id}`); }}
+                          className="p-2 text-slate-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-500/10 rounded-xl transition border border-slate-100 dark:border-slate-800 shadow-sm">
                           <Eye size={18} />
                         </button>
-                        <button className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-xl transition border border-slate-100 dark:border-slate-800 shadow-sm">
+                        <button
+                          type="button"
+                          aria-label="Chỉnh sửa CLB"
+                          onClick={(e) => { e.stopPropagation(); navigate(`/admin/clubs/details/${club.id}`); }}
+                          className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-xl transition border border-slate-100 dark:border-slate-800 shadow-sm">
                           <Edit size={18} />
                         </button>
                       </div>

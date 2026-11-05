@@ -80,10 +80,8 @@ export default function App() {
         <Route path="*" element={<NotFound />} />
       </Routes>
 
-      {/* ChatBot hiển thị toàn app */}
-      <div className="min-h-screen bg-white">
-        <ChatBot />
-      </div>
+      {/* ChatBot floating – hiển thị toàn app */}
+      <ChatBot />
     </Router>
   );
 }

@@ -86,7 +86,8 @@ export default function ClubUpdate() {
     setSaving(true);
     try {
       // Loại bỏ các trường không cần thiết trước khi gửi payload
-      const payload = { ...formData }; delete payload.comments;
+      const { comments, ...payload } = formData;
+      void comments; // Read-only response data is not part of the update payload.
 
       await updateOwnerClub(id!, payload);
       alert("Cập nhật thành công!");
