@@ -8,8 +8,9 @@ import {
   Loader2,
 } from "lucide-react";
 
-const CLOUDINARY_UPLOAD_PRESET = "ml_default";
-const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dc5dzscp5/image/upload";
+const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "ml_default";
+const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "dc5dzscp5";
+const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${encodeURIComponent(CLOUDINARY_CLOUD_NAME)}/image/upload`;
 
 interface MediaSectionProps {
   avatar: string;
@@ -38,8 +39,10 @@ export default function MediaSection({
         method: "POST",
         body: formData,
       });
+      if (!response.ok) throw new Error("Upload failed");
       const data = await response.json();
-      return data.secure_url; // Trả về link ảnh sau khi upload thành công
+      if (typeof data.secure_url !== "string" || !data.secure_url.trim()) throw new Error("Missing image URL");
+      return data.secure_url as string; // Trả về link ảnh sau khi upload thành công
     } catch (error) {
       console.error("Lỗi upload ảnh:", error);
       alert("Không thể tải ảnh lên, vui lòng thử lại!");

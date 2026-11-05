@@ -30,8 +30,9 @@ import {
 import { createOwnerClub } from "../../../../services/adminService";
 
 const generateId = () => Math.random().toString(36).substr(2, 9);
-const CLOUDINARY_UPLOAD_PRESET = "ml_default";
-const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dc5dzscp5/image/upload";
+const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "ml_default";
+const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "dc5dzscp5";
+const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${encodeURIComponent(CLOUDINARY_CLOUD_NAME)}/image/upload`;
 
 export default function ClubAdd() {
   const navigate = useNavigate();
@@ -65,9 +66,13 @@ export default function ClubAdd() {
     data.append("file", file);
     data.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
     try {
-      const res = await axios.post(CLOUDINARY_URL, data);
-      return res.data.secure_url;
+      const response = await fetch(CLOUDINARY_URL, { method: "POST", body: data });
+      if (!response.ok) throw new Error("Upload failed");
+      const result = await response.json();
+      if (typeof result.secure_url !== "string" || !result.secure_url.trim()) throw new Error("Missing image URL");
+      return result.secure_url as string;
     } catch {
+      setErrorMsg("Không thể tải ảnh lên. Vui lòng kiểm tra kết nối hoặc thử lại với ảnh khác.");
       return null;
     }
   };
@@ -78,6 +83,7 @@ export default function ClubAdd() {
   ) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
+    setErrorMsg("");
     setIsUploading(true);
     if (type === "avatar") {
       const url = await uploadToCloudinary(files[0]);

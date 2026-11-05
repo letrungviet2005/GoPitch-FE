@@ -10,7 +10,6 @@ import type {
   BookingSlot,
   ClubDetail,
   Pitch,
-  PitchPrice,
 } from "../../../types/api";
 import styles from "./BookingPitch.module.scss";
 
@@ -33,6 +32,7 @@ const BookingPitch = () => {
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(getTodayLocal());
   const [selectedSlots, setSelectedSlots] = useState<BookingSlot[]>([]);
+  const [selectionMessage, setSelectionMessage] = useState("");
 
   const dateOptions = useMemo(() => {
     const options = [];
@@ -55,40 +55,20 @@ const BookingPitch = () => {
     return options;
   }, []);
 
-  const timeLabels = useMemo(() => {
-    const arr = [];
-    for (let h = 5; h <= 22; h++) {
-      arr.push(`${h.toString().padStart(2, "0")}:00`);
-    }
-    return arr;
-  }, []);
+  const timeLabels = useMemo(() => [...new Set(pitches.flatMap(pitch =>
+    pitch.calendars.filter(c => c.startTime.startsWith(`${selectedDate}T`))
+      .map(c => c.startTime.split("T")[1].substring(0, 5))
+  ))].sort(), [pitches, selectedDate]);
 
-  const isPastSlot = (date: string, time: string) => {
-    const today = getTodayLocal();
-    if (date < today) return true;
-    if (date > today) return false;
+  const isPastSlot = (date: string, time: string) =>
+    new Date(`${date}T${time}:00`).getTime() <= Date.now();
 
-    const now = new Date();
-    const [slotHour] = time.split(":").map(Number);
-    return slotHour <= now.getHours();
-  };
-
-  const getPriceForTime = (pitchId: number, time: string) => {
-    if (!clubInfo?.pitchPrices) return 0;
-    const match = clubInfo.pitchPrices.find((p: PitchPrice) => {
-      const isSamePitch = String(p.pitchId) === String(pitchId);
-      const start = p.timeStart.substring(0, 5);
-      const end = p.timeEnd.substring(0, 5);
-      return isSamePitch && time >= start && time < end;
-    });
-    return match ? match.price : 0;
-  };
-
-  const fetchBookingData = useCallback(async () => {
+  const fetchBookingData = useCallback(async (isCurrent: () => boolean) => {
     if (!selectedDate || !id) return;
     try {
       setLoading(true);
       const club = await getClubById(id);
+      if (!isCurrent()) return;
       setClubInfo(club);
 
       const pitchData = await Promise.all(
@@ -101,20 +81,28 @@ const BookingPitch = () => {
           }
         }),
       );
-      setPitches(pitchData);
+      if (isCurrent()) setPitches(pitchData);
     } catch (err) {
+      if (isCurrent()) {
+        setPitches([]);
+        setSelectionMessage("Không tải được lịch. Vui lòng thử lại.");
+      }
       console.error("Lỗi API:", err);
     } finally {
-      setLoading(false);
+      if (isCurrent()) setLoading(false);
     }
   }, [id, selectedDate]);
 
   useEffect(() => {
-    fetchBookingData();
+    let current = true;
+    setSelectedSlots([]);
+    setSelectionMessage("");
+    void fetchBookingData(() => current);
+    return () => { current = false; };
   }, [fetchBookingData]);
 
   const handleCellClick = (pitch: PitchWithCalendars, time: string) => {
-    if (isPastSlot(selectedDate, time)) return;
+    if (loading || isPastSlot(selectedDate, time)) return;
 
     const calendar = pitch.calendars.find(c => c.startTime.split("T")[1]?.substring(0,5) === time);
     if (!calendar || !calendar.active) return;
@@ -124,24 +112,33 @@ const BookingPitch = () => {
     if (isSlotBooked(pitch.calendars, time)) return;
 
     const slotKey = `${pitch.id}-${time}`;
-    const exists = selectedSlots.some((s) => s.slotKey === slotKey);
-
-    if (exists) {
-      setSelectedSlots(selectedSlots.filter((s) => s.slotKey !== slotKey));
-    } else {
-      setSelectedSlots([
-        ...selectedSlots,
-        {
-          slotKey,
-          calendarId: calendar.id,
-          pitchId: pitch.id,
-          pitchName: pitch.name,
-          time,
-          date: selectedDate,
-          price,
-        },
-      ]);
+    const exists = selectedSlots.some(s => s.slotKey === slotKey);
+    if (!exists && selectedSlots.some(s => s.pitchId !== pitch.id)) {
+      setSelectionMessage("Mỗi lần đặt chỉ chọn một sân con. Hãy xóa lựa chọn hiện tại để đổi sân.");
+      return;
     }
+    const next = exists ? selectedSlots.filter(s => s.slotKey !== slotKey) : [
+      ...selectedSlots,
+      { slotKey, calendarId: calendar.id, pitchId: pitch.id, pitchName: pitch.name,
+        time, date: selectedDate, price },
+    ];
+    next.sort((a, b) => a.time.localeCompare(b.time));
+    const calendars = next.map(s => pitch.calendars.find(c => c.id === s.calendarId));
+    const valid = calendars.every((c, index) => c &&
+      new Date(c.endTime).getTime() - new Date(c.startTime).getTime() === 60 * 60 * 1000 &&
+      (index === 0 || new Date(calendars[index - 1]!.endTime).getTime() === new Date(c.startTime).getTime()));
+    if (!valid) {
+      setSelectionMessage(exists
+        ? "Không thể bỏ ô giữa vì sẽ làm lịch bị ngắt quãng. Hãy bỏ ô đầu/cuối hoặc xóa tất cả."
+        : "Hãy chọn khung giờ 60 phút liền kề trước hoặc sau các ô đang chọn.");
+      return;
+    }
+    if (next.length > 12) {
+      setSelectionMessage("Mỗi lần đặt tối đa 12 khung giờ liên tục.");
+      return;
+    }
+    setSelectedSlots(next);
+    setSelectionMessage("");
   };
 
   const totalAmount = selectedSlots.reduce((sum, s) => sum + s.price, 0);
@@ -172,6 +169,7 @@ const BookingPitch = () => {
               onClick={() => {
                 setSelectedDate(opt.fullDate);
                 setSelectedSlots([]);
+                setSelectionMessage("");
               }}
             >
               <span className={cx("day-name")}>{opt.dayName}</span>
@@ -181,6 +179,13 @@ const BookingPitch = () => {
         </div>
       </div>
 
+      <p>Chọn tối đa 12 khung giờ liên tục trên cùng một sân con. Mỗi ô là 60 phút.</p>
+      {selectionMessage && <p role="alert">{selectionMessage}</p>}
+      {selectedSlots.length > 0 && <button type="button" onClick={() => {
+        setSelectedSlots([]); setSelectionMessage("");
+      }}>Xóa lựa chọn</button>}
+      {loading && <p role="status">Đang tải lịch…</p>}
+      {!loading && !timeLabels.length && <p>Chưa có lịch cho ngày đã chọn.</p>}
       <div className={cx("table-container")}>
         <table className={cx("booking-table")}>
           <thead>
@@ -200,13 +205,15 @@ const BookingPitch = () => {
                   const isSelected = selectedSlots.some(
                     (s) => s.slotKey === `${p.id}-${t}`,
                   );
-                  const price = getPriceForTime(p.id, t);
+                  const calendar = p.calendars.find(c => c.startTime.startsWith(`${selectedDate}T${t}:`));
+                  const price = calendar?.price ?? 0;
                   const isPast = isPastSlot(selectedDate, t);
-                  const hasNoPrice = price <= 0 || !p.calendars.some(c => c.startTime.split("T")[1]?.substring(0,5) === t);
+                  const hasNoPrice = price <= 0 || !calendar || !calendar.active;
 
                   return (
                     <td
                       key={t}
+                      title={calendar ? `${t} – ${calendar.endTime.split("T")[1]?.substring(0, 5)}` : "Chưa có lịch"}
                       className={cx("cell", {
                         booked,
                         selected: isSelected,
@@ -254,7 +261,7 @@ const BookingPitch = () => {
         </div>
         <button
           className={cx("next-btn")}
-          disabled={selectedSlots.length === 0}
+          disabled={loading || selectedSlots.length === 0}
           onClick={() =>
             navigate("/payment", {
               state: {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ShieldCheck } from "lucide-react";
 import PageMeta from "../../../components/common/PageMeta";
 import {
@@ -17,22 +17,23 @@ export default function Role() {
     total: 0,
   });
 
-  const fetchRoles = async (page = 1) => {
+  const pageSize = meta.pageSize;
+  const fetchRoles = useCallback(async (page = 1) => {
     setLoading(true);
     try {
-      const data = await getAdminRoles({ page: page - 1, size: meta.pageSize });
+      const data = await getAdminRoles({ page, size: pageSize });
       setRoles(data.result || []);
-      setMeta(data.meta || meta);
+      setMeta(previous => data.meta || previous);
     } catch (error) {
       console.error("Cannot load roles:", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [pageSize]);
 
   useEffect(() => {
     fetchRoles(1);
-  }, []);
+  }, [fetchRoles]);
 
   return (
     <div className="p-6 bg-slate-50 dark:bg-slate-950 min-h-screen">

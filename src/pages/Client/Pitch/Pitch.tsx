@@ -23,7 +23,7 @@ const Pitch: React.FC = () => {
 
   const pitchesPerPage = 12;
 
-  const userCoords = getStoredLocation();
+  const { lat, lng } = getStoredLocation() ?? {};
 
   const formatTime = (timeString?: string) => {
     if (!timeString) return "";
@@ -53,13 +53,13 @@ const Pitch: React.FC = () => {
         const actualData = data.result ? data : data.data || data;
         let rawPitches = actualData.result || [];
 
-        if (userCoords && userCoords.lat && userCoords.lng) {
+        if (lat != null && lng != null) {
           rawPitches = rawPitches.map((pitch: ClubDetail) => {
             // Kiểm tra nếu sân có đủ tọa độ từ BE
             if (pitch.latitude && pitch.longitude) {
               const dist = calculateDistance(
-                userCoords.lat,
-                userCoords.lng,
+                lat,
+                lng,
                 Number(pitch.latitude),
                 Number(pitch.longitude)
               );
@@ -87,7 +87,7 @@ const Pitch: React.FC = () => {
 
     fetchPitches();
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [currentPage, debouncedSearchTerm, userCoords?.lat, userCoords?.lng]);
+  }, [currentPage, debouncedSearchTerm, lat, lng]);
 
   const handlePitchClick = (id: number) => {
     navigate(`/detailpitch/${id}`);
